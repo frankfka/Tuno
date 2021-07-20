@@ -1,35 +1,39 @@
-import {Mongoose} from "mongoose";
+import AuthServiceImpl, {AuthService} from "./auth/AuthService";
 import DatabaseServiceImpl, {DatabaseService} from "./database/DatabaseService";
 
-export interface AppService {
+export interface ServerAppService {
   init(): Promise<void>;
   databaseService: DatabaseService;
+  authService: AuthService;
 }
 
-class AppServiceImpl implements AppService {
+class ServerAppServiceImpl implements ServerAppService {
 
   /*
   Initialization
    */
 
   databaseService!: DatabaseService;
+  authService!: AuthService;
 
   async init() {
     this.databaseService = new DatabaseServiceImpl();
     await this.databaseService.init();
+
+    this.authService = new AuthServiceImpl();
   }
 }
 
-let cachedService: AppService | undefined = undefined;
+let cachedService: ServerAppService | undefined = undefined;
 
-export const getAppService = async (): Promise<AppService> => {
+export const getServerAppService = async (): Promise<ServerAppService> => {
   if (cachedService != null) {
     console.log("Returning cached service")
     return cachedService
   }
 
   console.log("Creating new app service")
-  cachedService = new AppServiceImpl();
+  cachedService = new ServerAppServiceImpl();
   await cachedService.init();
 
   return cachedService;

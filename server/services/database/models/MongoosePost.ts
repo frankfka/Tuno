@@ -1,5 +1,5 @@
 import mongoose, {Document, Model, Schema} from 'mongoose'
-import PostContent from "../../../types/PostContent";
+import PostContent from "../../../../types/PostContent";
 
 export interface MongoosePostData extends PostContent {
   // author: string;

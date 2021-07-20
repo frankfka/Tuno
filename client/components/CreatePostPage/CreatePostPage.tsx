@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { useRouter } from 'next/router'
 import React, {useState} from 'react';
-import PostContent from "../../types/PostContent";
-import getLinkContentInfo from "../../util/getLinkContentInfo";
+import PostContent from "../../../types/PostContent";
+import getLinkContentInfo from "../../../util/getLinkContentInfo";
 
 const CreatePostPage = () => {
 

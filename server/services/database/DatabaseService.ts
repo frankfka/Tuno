@@ -1,5 +1,5 @@
 import {Model, Mongoose} from "mongoose";
-import PostContent from "../../types/PostContent";
+import PostContent from "../../../types/PostContent";
 import getMongooseConnection from "./getMongooseConnection";
 import MongoosePost, {MongoosePostDocument} from "./models/MongoosePost";
 

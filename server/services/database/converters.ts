@@ -1,4 +1,4 @@
-import Post from "../../types/Post";
+import Post from "../../../types/Post";
 import {MongoosePostData, MongoosePostDocument} from "./models/MongoosePost";
 
 export const convertPostDocumentToPost = (postDocument: MongoosePostDocument): Post => {
