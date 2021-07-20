@@ -3,7 +3,7 @@ import {getServerAppService} from "../../../server/services/serverAppService";
 
 export default async function login(req: NextApiRequest, res: NextApiResponse) {
   const appService = await getServerAppService();
-  const session = await appService.authService.login(req.headers.authorization ?? '');
+  const session = await appService.login(req.headers.authorization ?? '');
 
   if (session == null) {
     res.status(401).send({

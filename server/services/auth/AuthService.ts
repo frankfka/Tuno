@@ -1,25 +1,20 @@
 import Iron from "@hapi/iron";
 import {Magic} from "@magic-sdk/admin";
 import {serialize} from "cookie";
-
-// https://magic.link/docs/admin-sdk/node/api-reference#getmetadatabytoken
-export interface UserSessionData {
-  authIdentifier: string // DID from magic
-  email: string;
-}
+import UserAuthData from "./UserAuthData";
 
 export interface AuthService {
   // Login/Logout
-  login(authHeader: string): Promise<UserSessionData | undefined>
+  login(authHeader: string): Promise<UserAuthData | undefined>
 
-  logout(auth: UserSessionData): Promise<void>
+  logout(auth: UserAuthData): Promise<void>
 
   // Cookie utils
-  getSessionTokenCookie(session: UserSessionData): Promise<string>;
+  getSessionTokenCookie(session: UserAuthData): Promise<string>;
 
   getInvalidatedSessionTokenCookie(): string;
 
-  getSessionFromCookies(cookies: Record<string, string>): Promise<UserSessionData | undefined>
+  getSessionFromCookies(cookies: Record<string, string>): Promise<UserAuthData | undefined>
 }
 
 export default class AuthServiceImpl implements AuthService {
@@ -47,7 +42,7 @@ export default class AuthServiceImpl implements AuthService {
     this.authTokenSecret = authTokenSecret;
   }
 
-  async login(authHeader: string): Promise<UserSessionData | undefined> {
+  async login(authHeader: string): Promise<UserAuthData | undefined> {
     try {
       const didToken = this.magicAuth.utils.parseAuthorizationHeader(authHeader);
       const userMetadata = await this.magicAuth.users.getMetadataByToken(didToken)
@@ -65,11 +60,11 @@ export default class AuthServiceImpl implements AuthService {
     }
   }
 
-  async logout(auth: UserSessionData): Promise<void> {
+  async logout(auth: UserAuthData): Promise<void> {
     await this.magicAuth.users.logoutByIssuer(auth.authIdentifier);
   }
 
-  async getSessionTokenCookie(session: UserSessionData): Promise<string> {
+  async getSessionTokenCookie(session: UserAuthData): Promise<string> {
     const createdAt = Date.now()
 
     const sessionTokenData = {...session, createdAt, maxAge: this.authTokenCookieMaxAge}
@@ -93,7 +88,7 @@ export default class AuthServiceImpl implements AuthService {
     })
   }
 
-  async getSessionFromCookies(cookies: Record<string, string>): Promise<UserSessionData | undefined> {
+  async getSessionFromCookies(cookies: Record<string, string>): Promise<UserAuthData | undefined> {
     const authToken = cookies[this.authTokenCookieName];
 
     if (!authToken) {

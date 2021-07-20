@@ -1,10 +1,7 @@
 import mongoose, {Document, Model, Schema} from 'mongoose'
-import PostContent from "../../../../types/PostContent";
+import Post from "../../../../types/Post";
 
-export interface MongoosePostData extends PostContent {
-  // author: string;
-  createdAt: Date;
-}
+export type MongoosePostData = Post;
 
 export type MongoosePostModel = Model<MongoosePostData>;
 
