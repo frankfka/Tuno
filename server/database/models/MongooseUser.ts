@@ -1,5 +1,5 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
-import User from '../../../../types/User';
+import User from '../../../types/User';
 import UserAuthData from '../../auth/UserAuthData';
 
 export interface MongooseUserData extends User {
@@ -17,6 +17,17 @@ const UserSchema = new Schema<MongooseUserData>({
   auth: {
     authIdentifier: { type: String, required: true },
     email: { type: String, required: false },
+  },
+  lastVotedAt: { type: Date, required: true, default: Date.UTC(2000, 0) },
+  votes: {
+    type: [
+      {
+        post: { type: Schema.Types.ObjectId, required: true, ref: 'Post' },
+        weight: { type: Schema.Types.Number, required: true },
+      },
+    ],
+    required: true,
+    default: [],
   },
 });
 

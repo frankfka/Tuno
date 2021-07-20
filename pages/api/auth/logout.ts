@@ -1,15 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getServerAppService } from '../../../server/services/serverAppService';
-import getCookiesFromRequest from '../../../util/getCookiesFromRequest';
+import getRequestSession from '../../../server/reqHandlerUtils/getRequestSession';
+import { getServerAppService } from '../../../server/serverAppService';
+import getCookiesFromRequest from '../../../server/reqHandlerUtils/getCookiesFromRequest';
 
 export default async function logout(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   const appService = await getServerAppService();
-  const session = await appService.authService.getSessionFromCookies(
-    getCookiesFromRequest(req)
-  );
+  const session = await getRequestSession(req, appService);
 
   if (session) {
     await appService.authService.logout(session);

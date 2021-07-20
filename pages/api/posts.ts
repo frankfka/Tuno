@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getServerAppService } from '../../server/services/serverAppService';
-import { convertPostDocumentToPost } from '../../server/services/database/converters';
+import { getServerAppService } from '../../server/serverAppService';
+import { convertPostDocumentToPost } from '../../server/database/converters';
 import Post from '../../types/Post';
 
 type Data = {
@@ -12,6 +12,7 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   const appService = await getServerAppService();
+  console.log(await appService.databaseService.getPosts());
   const posts = (await appService.databaseService.getPosts()).map(
     convertPostDocumentToPost
   );

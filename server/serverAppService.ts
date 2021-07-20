@@ -1,4 +1,4 @@
-import User from '../../types/User';
+import User from '../types/User';
 import AuthServiceImpl, { AuthService } from './auth/AuthService';
 import UserAuthData from './auth/UserAuthData';
 import { convertUserDocumentToUser } from './database/converters';

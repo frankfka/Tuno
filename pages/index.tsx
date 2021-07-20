@@ -29,6 +29,13 @@ export default function Home() {
     })();
   };
 
+  const onVoteClicked = (postId: string) => {
+    (async () => {
+      const resp = await fetch(`/api/post/${postId}/upvote`);
+      console.log('Voted');
+    })();
+  };
+
   return (
     <div>
       <Head>
@@ -40,7 +47,8 @@ export default function Home() {
       <div>
         {user && (
           <div>
-            <p>Current user: {JSON.stringify(user)}</p>
+            <p>Current user:</p>
+            <pre>{JSON.stringify(user, null, 2)}</pre>
             <button onClick={onLogoutClicked}>Log Out</button>
           </div>
         )}
@@ -76,6 +84,15 @@ export default function Home() {
               <h3>{post.title}</h3>
               <p>{post.createdAt}</p>
               {contentElement}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  onVoteClicked(post.id);
+                }}
+              >
+                Vote
+              </button>
+              <p>Votes: {post.voteScore}</p>
             </div>
           );
         })}
