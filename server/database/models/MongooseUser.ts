@@ -18,10 +18,10 @@ const UserSchema = new Schema<MongooseUserData>({
     authIdentifier: { type: String, required: true },
     email: { type: String, required: false },
   },
-  lastVotedAt: { type: Date, required: true, default: Date.UTC(2000, 0) },
   votes: {
     type: [
       {
+        createdAt: { type: Date, required: true, default: Date.now },
         post: { type: Schema.Types.ObjectId, required: true, ref: 'Post' },
         weight: { type: Schema.Types.Number, required: true },
       },

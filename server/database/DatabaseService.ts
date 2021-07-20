@@ -1,7 +1,7 @@
 import { Model, Mongoose, Schema } from 'mongoose';
 import { remove } from 'lodash';
 import PostContent from '../../types/PostContent';
-import Vote from '../../types/Vote';
+import { CreateVoteParams } from '../../types/Vote';
 import UserAuthData from '../auth/UserAuthData';
 import getMongooseConnection from './getMongooseConnection';
 import MongoosePost, { MongoosePostDocument } from './models/MongoosePost';
@@ -14,7 +14,7 @@ export interface DatabaseService {
     authorId: string
   ): Promise<MongoosePostDocument>;
   getPosts(): Promise<MongoosePostDocument[]>;
-  voteOnPost(userId: string, vote: Vote): Promise<void>;
+  voteOnPost(userId: string, vote: CreateVoteParams): Promise<void>;
   createUser(authData: UserAuthData): Promise<MongooseUserDocument>;
   getUser(authIdentifier: string): Promise<MongooseUserDocument | null>;
 }
@@ -49,7 +49,7 @@ export default class DatabaseServiceImpl implements DatabaseService {
 
   // TODO: First do the below, then we need to figure out a reset mechanism
   // Throws if unsuccessful
-  async voteOnPost(userId: string, vote: Vote) {
+  async voteOnPost(userId: string, vote: CreateVoteParams) {
     console.log('Begin vote on post', userId, 'Vote:', vote);
 
     await this.mongoose.connection.transaction(async (session) => {
@@ -69,18 +69,18 @@ export default class DatabaseServiceImpl implements DatabaseService {
 
       let scoreUpdate = vote.weight;
 
-      // Update user lastVotedAt & current votes
-      mongooseUser.lastVotedAt = new Date();
-
-      // To modify arrays, make a copy of the existing votes, modify it, and then set it on the mongoose object
+      // Update array of user votes, make a copy of the existing votes, modify it, and then set it on the mongoose object
       const userVotes = mongooseUser.toObject().votes;
       const existingVotesForPost = remove(
         userVotes,
         (existingVote) => existingVote.post == vote.post
       );
-
       existingVotesForPost.forEach((v) => (scoreUpdate -= v.weight));
-      userVotes.push(vote);
+      userVotes.push({
+        ...vote,
+        createdAt: new Date(),
+      });
+
       mongooseUser.votes = userVotes;
 
       // Update post score
