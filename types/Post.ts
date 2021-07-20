@@ -1,4 +1,4 @@
-import PostContent from "./PostContent";
+import PostContent from './PostContent';
 
 type Post = {
   id: string;

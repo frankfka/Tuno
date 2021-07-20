@@ -1,5 +1,5 @@
-import type {NextApiRequest, NextApiResponse} from "next";
-import {getServerAppService} from "../../../server/services/serverAppService";
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { getServerAppService } from '../../../server/services/serverAppService';
 
 export default async function login(req: NextApiRequest, res: NextApiResponse) {
   const appService = await getServerAppService();
@@ -7,14 +7,16 @@ export default async function login(req: NextApiRequest, res: NextApiResponse) {
 
   if (session == null) {
     res.status(401).send({
-      error: 'Unauthorized'
-    })
-    return
+      error: 'Unauthorized',
+    });
+    return;
   }
 
   // Set session cookie
-  const sessionCookie = await appService.authService.getSessionTokenCookie(session)
-  res.setHeader('Set-Cookie', sessionCookie)
+  const sessionCookie = await appService.authService.getSessionTokenCookie(
+    session
+  );
+  res.setHeader('Set-Cookie', sessionCookie);
 
-  res.status(200).send({ done: true })
+  res.status(200).send({ done: true });
 }

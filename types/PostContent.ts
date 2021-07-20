@@ -1,10 +1,10 @@
-import PostContentSource from "./PostContentSource";
-import PostContentType from "./PostContentType";
+import PostContentSource from './PostContentSource';
+import PostContentType from './PostContentType';
 
 type PostContent = {
   title: string;
   contentType: PostContentType;
-  source: PostContentSource
-}
+  source: PostContentSource;
+};
 
 export default PostContent;

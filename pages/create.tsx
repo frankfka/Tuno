@@ -1,9 +1,8 @@
-import Head from "next/head";
+import Head from 'next/head';
 import React from 'react';
-import CreatePostPage from "../client/components/CreatePostPage/CreatePostPage";
+import CreatePostPage from '../client/components/CreatePostPage/CreatePostPage';
 
 const Create = () => {
-
   return (
     <div>
       <Head>

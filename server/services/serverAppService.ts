@@ -1,8 +1,10 @@
-import User from "../../types/User";
-import AuthServiceImpl, {AuthService} from "./auth/AuthService";
-import UserAuthData from "./auth/UserAuthData";
-import {convertUserDocumentToUser} from "./database/converters";
-import DatabaseServiceImpl, {DatabaseService} from "./database/DatabaseService";
+import User from '../../types/User';
+import AuthServiceImpl, { AuthService } from './auth/AuthService';
+import UserAuthData from './auth/UserAuthData';
+import { convertUserDocumentToUser } from './database/converters';
+import DatabaseServiceImpl, {
+  DatabaseService,
+} from './database/DatabaseService';
 
 export interface ServerAppService {
   init(): Promise<void>;
@@ -14,13 +16,12 @@ export interface ServerAppService {
    */
 
   // Auth
-  login(authHeader: string): Promise<UserAuthData | undefined>
-  logout(userAuth: UserAuthData): Promise<void>
-  getUser(authIdentifier: string): Promise<User | undefined>
+  login(authHeader: string): Promise<UserAuthData | undefined>;
+  logout(userAuth: UserAuthData): Promise<void>;
+  getUser(authIdentifier: string): Promise<User | undefined>;
 }
 
 class ServerAppServiceImpl implements ServerAppService {
-
   /*
   Initialization
    */
@@ -39,13 +40,13 @@ class ServerAppServiceImpl implements ServerAppService {
     const userAuth = await this.authService.login(authHeader);
 
     if (userAuth == null) {
-      console.error("No user auth resulted from authService login");
+      console.error('No user auth resulted from authService login');
       return;
     }
 
     let user = await this.databaseService.getUser(userAuth.authIdentifier);
     if (user == null) {
-      console.log("No current user exists for this auth, creating new user")
+      console.log('No current user exists for this auth, creating new user');
       user = await this.databaseService.createUser(userAuth);
     }
 
@@ -62,22 +63,21 @@ class ServerAppServiceImpl implements ServerAppService {
       return;
     }
 
-    return convertUserDocumentToUser(dbUser)
+    return convertUserDocumentToUser(dbUser);
   }
-
 }
 
 let cachedService: ServerAppService | undefined = undefined;
 
 export const getServerAppService = async (): Promise<ServerAppService> => {
   if (cachedService != null) {
-    console.log("Returning cached service")
-    return cachedService
+    console.log('Returning cached service');
+    return cachedService;
   }
 
-  console.log("Creating new app service")
+  console.log('Creating new app service');
   cachedService = new ServerAppServiceImpl();
   await cachedService.init();
 
   return cachedService;
-}
+};
