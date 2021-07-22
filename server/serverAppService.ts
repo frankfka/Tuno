@@ -1,7 +1,10 @@
 import User from '../types/User';
 import AuthServiceImpl, { AuthService } from './auth/AuthService';
 import UserAuthData from './auth/UserAuthData';
-import { BlockchainServiceImpl } from './blockchain/BlockchainService';
+import {
+  BlockchainService,
+  BlockchainServiceImpl,
+} from './blockchain/BlockchainService';
 import {
   convertPostDocumentToPost,
   convertUserDocumentToUser,
@@ -19,6 +22,7 @@ export interface ServerAppService {
   init(): Promise<void>;
   databaseService: DatabaseService;
   authService: AuthService;
+  blockchainService: BlockchainService;
 
   /*
   Top level functions
@@ -40,7 +44,7 @@ class ServerAppServiceImpl implements ServerAppService {
 
   databaseService!: DatabaseService;
   authService!: AuthService;
-  blockchainService!: BlockchainServiceImpl;
+  blockchainService!: BlockchainService;
 
   async init() {
     this.databaseService = new DatabaseServiceImpl();

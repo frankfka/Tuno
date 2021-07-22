@@ -20,24 +20,10 @@ export default async function handler(
   // TODO: Check time last tallied
   // TODO: Tie breaker
   const appService = await getServerAppService();
-  const topPosts = await appService.databaseService.getPosts(
-    {
-      voteScore: {
-        $gt: 0,
-      },
-      createdAt: {
-        $gte: myDate,
-      },
-    },
-    {
-      voteScore: 'desc',
-    }
+  await appService.blockchainService.mintTopPostNFT(
+    '0xF7218d3b5719DbF8d44091B829b81438A8f5f576',
+    ''
   );
-
-  console.log(topPosts);
-  if (topPosts.length > 0) {
-    // TODO: Mint first post!
-  }
 
   res.status(200).json({ name: 'John Doe' });
 }
