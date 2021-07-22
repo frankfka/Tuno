@@ -24,7 +24,8 @@
     "react-image": "^4.0.3",
     "react-player": "^2.9.0",
     "swr": "^0.5.6",
-    "url-parse": "^1.5.1"
+    "url-parse": "^1.5.1",
+    "web3": "^1.4.0"
   },
   "devDependencies": {
     "@types/cookie": "^0.4.1",

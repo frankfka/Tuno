@@ -1,10 +1,19 @@
 import User from '../types/User';
 import AuthServiceImpl, { AuthService } from './auth/AuthService';
 import UserAuthData from './auth/UserAuthData';
-import { convertUserDocumentToUser } from './database/converters';
+import { BlockchainServiceImpl } from './blockchain/BlockchainService';
+import {
+  convertPostDocumentToPost,
+  convertUserDocumentToUser,
+} from './database/converters';
 import DatabaseServiceImpl, {
   DatabaseService,
 } from './database/DatabaseService';
+import {
+  getPostsFilter,
+  getPostsSortBy,
+} from './database/helpers/databasePostUtils';
+import { GetPostsParams, GetPostsResult } from './types/GetPosts';
 
 export interface ServerAppService {
   init(): Promise<void>;
@@ -14,6 +23,9 @@ export interface ServerAppService {
   /*
   Top level functions
    */
+
+  // Posts
+  getPosts(params: GetPostsParams): Promise<GetPostsResult>;
 
   // Auth
   login(authHeader: string): Promise<UserAuthData | undefined>;
@@ -28,13 +40,59 @@ class ServerAppServiceImpl implements ServerAppService {
 
   databaseService!: DatabaseService;
   authService!: AuthService;
+  blockchainService!: BlockchainServiceImpl;
 
   async init() {
     this.databaseService = new DatabaseServiceImpl();
     await this.databaseService.init();
 
     this.authService = new AuthServiceImpl();
+    this.blockchainService = new BlockchainServiceImpl();
   }
+
+  /*
+  Posts
+   */
+  async getPosts(params: GetPostsParams): Promise<GetPostsResult> {
+    const { tallyIndex, minVoteScore } = params;
+
+    const globalState = await this.databaseService.getGlobalStateData();
+    const numPastTallies = globalState.tallyTimes.length;
+
+    // Param
+    if (tallyIndex < 0 || tallyIndex > numPastTallies) {
+      return {
+        posts: [],
+        hasMore: false,
+      };
+    }
+
+    // Get dates from tally index
+    const startTime =
+      tallyIndex < numPastTallies
+        ? globalState.tallyTimes[tallyIndex]
+        : undefined;
+    const endTime =
+      tallyIndex > 0 ? globalState.tallyTimes[tallyIndex - 1] : undefined;
+
+    const postDocuments = await this.databaseService.getPosts(
+      getPostsFilter({ startTime, endTime, minVoteScore }),
+      getPostsSortBy({
+        createdAt: tallyIndex === 0 ? 'desc' : undefined, // Rev chronological order for current tally
+        voteScore: tallyIndex > 0 ? 'desc' : undefined, // Sort by score for past tallies
+      })
+    );
+    const posts = postDocuments.map((doc) => convertPostDocumentToPost(doc));
+
+    return {
+      posts,
+      hasMore: tallyIndex === numPastTallies,
+    };
+  }
+
+  /*
+  Auth
+   */
 
   async login(authHeader: string): Promise<UserAuthData | undefined> {
     const userAuth = await this.authService.login(authHeader);

@@ -24,7 +24,7 @@ const CreatePostPage = () => {
       ...linkContentInfo,
     };
 
-    const resp = await fetch('/api/post', {
+    const resp = await fetch('/api/posts/create', {
       method: 'POST',
       body: JSON.stringify(postContent),
       headers: {

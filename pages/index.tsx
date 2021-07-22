@@ -13,10 +13,10 @@ export default function Home() {
 
   useEffect(() => {
     (async () => {
-      const postsData = await fetch('/api/posts');
+      const postsData = await fetch('/api/posts?tallyIndex=0');
       const postJson = await postsData.json();
 
-      setPosts(postJson.posts as Post[]);
+      setPosts(postJson.data.posts as Post[]);
     })();
   }, []);
 
@@ -31,7 +31,16 @@ export default function Home() {
 
   const onVoteClicked = (postId: string) => {
     (async () => {
-      const resp = await fetch(`/api/post/${postId}/upvote`);
+      const resp = await fetch(`/api/posts/vote`, {
+        method: 'POST',
+        body: JSON.stringify({
+          postId: postId,
+          voteWeight: 1,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       console.log('Voted');
     })();
   };
