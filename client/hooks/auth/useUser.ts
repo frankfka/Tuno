@@ -1,39 +1,52 @@
 import { useEffect } from 'react';
 import Router from 'next/router';
-import useSWR from 'swr';
+import useSWR, { mutate, SWRResponse } from 'swr';
+import EndpointResult from '../../../types/EndpointResult';
+import User from '../../../types/User';
 
-const fetcher = (url: string) =>
-  fetch(url)
-    .then((r) => r.json())
-    .then((data) => {
-      return { user: data?.user || null };
-    });
-
+type RedirectPath = string;
 type UseUserVariables = {
-  redirectTo?: string;
-  redirectIfFound?: boolean;
+  redirect?: {
+    ifAuthed?: RedirectPath;
+    ifNotAuthed?: RedirectPath;
+  };
 };
-export function useUser({
-  redirectTo,
-  redirectIfFound,
-}: UseUserVariables = {}) {
-  const { data, error } = useSWR('/api/auth/user', fetcher);
-  const user = data?.user;
+
+type UseUserState = {
+  loading: boolean;
+  swr: SWRResponse<EndpointResult<User>, Error>;
+  user?: User;
+  error?: Error;
+};
+
+export const GET_USER_SWR_KEY = '/api/auth/user';
+
+export default function useUser(variables: UseUserVariables): UseUserState {
+  const { redirect } = variables;
+
+  const swr = useSWR<EndpointResult<User>>(GET_USER_SWR_KEY);
+  const { data, error } = swr;
+
+  const user = data?.data;
   const finished = Boolean(data);
   const hasUser = Boolean(user);
 
   useEffect(() => {
-    console.log('Use user data', data);
-    if (!redirectTo || !finished) return;
-    if (
-      // If redirectTo is set, redirect if the user was not found.
-      (redirectTo && !redirectIfFound && !hasUser) ||
-      // If redirectIfFound is also set, redirect if the user was found
-      (redirectIfFound && hasUser)
-    ) {
-      Router.push(redirectTo);
+    if (!redirect || !finished) {
+      return;
     }
-  }, [redirectTo, redirectIfFound, finished, hasUser]);
 
-  return error ? null : user;
+    if (hasUser && redirect?.ifAuthed != null) {
+      Router.push(redirect.ifAuthed);
+    } else if (!hasUser && redirect?.ifNotAuthed != null) {
+      Router.push(redirect.ifNotAuthed);
+    }
+  }, [redirect?.ifAuthed, redirect?.ifNotAuthed, finished, hasUser]);
+
+  return {
+    loading: !finished,
+    user,
+    error,
+    swr,
+  };
 }

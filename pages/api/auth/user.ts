@@ -2,9 +2,15 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import getRequestSession from '../../../server/reqHandlerUtils/getRequestSession';
 import sendUnauthorizedResponse from '../../../server/reqHandlerUtils/sendUnauthorizedResponse';
 import { getServerAppService } from '../../../server/serverAppService';
-import getCookiesFromRequest from '../../../server/reqHandlerUtils/getCookiesFromRequest';
+import EndpointResult from '../../../types/EndpointResult';
+import User from '../../../types/User';
+import executeAsyncForResult from '../../../util/executeAsyncForResult';
+import resultToEndpointResult from '../../../util/resultToEndpointResult';
 
-export default async function user(req: NextApiRequest, res: NextApiResponse) {
+export default async function user(
+  req: NextApiRequest,
+  res: NextApiResponse<EndpointResult<User>>
+) {
   const appService = await getServerAppService();
   const session = await getRequestSession(req, appService);
 
@@ -13,6 +19,14 @@ export default async function user(req: NextApiRequest, res: NextApiResponse) {
     return;
   }
 
-  const user = await appService.getUser(session.authIdentifier);
-  res.status(200).json({ user });
+  const userResult = await executeAsyncForResult(async () => {
+    const user = await appService.getUser(session.authIdentifier);
+    if (user != null) {
+      return user;
+    }
+
+    throw Error('User does not exist');
+  });
+
+  res.status(200).json(resultToEndpointResult(userResult));
 }
