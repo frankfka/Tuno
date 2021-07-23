@@ -12,18 +12,14 @@ export default async function handler(
     return;
   }
 
-  const dateOffset = 1000 * 60 * 5; // 5 minutes
-  const myDate = new Date();
-  myDate.setTime(myDate.getTime() - dateOffset);
-
   // TODO: Auth here
-  // TODO: Check time last tallied
-  // TODO: Tie breaker
   const appService = await getServerAppService();
-  await appService.blockchainService.mintTopPostNFT(
-    '0xF7218d3b5719DbF8d44091B829b81438A8f5f576',
-    ''
-  );
+  // await appService.blockchainService.mintTopPostNFT(
+  //   '0xF7218d3b5719DbF8d44091B829b81438A8f5f576',
+  //   ''
+  // );
 
-  res.status(200).json({ name: 'John Doe' });
+  await appService.tallyTopPost();
+
+  res.status(200).json({});
 }

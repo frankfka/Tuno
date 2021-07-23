@@ -6,7 +6,9 @@ import {
   Schema,
 } from 'mongoose';
 import { remove } from 'lodash';
+import GlobalState from '../../types/GlobalState';
 import PostContent from '../../types/PostContent';
+import TallyData from '../../types/TallyData';
 import { CreateVoteParams } from '../../types/Vote';
 import getLastTallyTime from '../../util/getLastTallyTime';
 import UserAuthData from '../auth/UserAuthData';
@@ -25,7 +27,7 @@ export interface DatabaseService {
   init(): Promise<void>;
 
   // Global
-  addTallyTime(tallyTime: Date): Promise<void>;
+  recordTally(tally: TallyData): Promise<void>;
   getGlobalStateData(): Promise<MongooseGlobalStateData>;
 
   // Posts
@@ -48,33 +50,33 @@ export interface DatabaseService {
 
 export default class DatabaseServiceImpl implements DatabaseService {
   private mongoose!: Mongoose;
+
   private cachedGlobalStateData!: MongooseGlobalStateData;
 
   async init() {
     this.mongoose = await getMongooseConnection();
-    this.cachedGlobalStateData = (
-      await this.getGlobalState()
-    ).toObject<MongooseGlobalStateData>();
+    this.cachedGlobalStateData = (await this.getGlobalState()).toObject();
   }
 
   /*
   Globals
    */
 
-  async addTallyTime(tallyTime: Date) {
+  async recordTally(tally: TallyData) {
     const globalStateDoc = await this.getGlobalState();
-    globalStateDoc.tallyTimes.unshift(tallyTime);
+    globalStateDoc.tallies.unshift(tally);
     await globalStateDoc.save();
 
-    this.cachedGlobalStateData =
-      globalStateDoc.toObject<MongooseGlobalStateData>();
+    this.cachedGlobalStateData = globalStateDoc.toObject();
   }
 
   async getGlobalStateData(): Promise<MongooseGlobalStateData> {
     return this.cachedGlobalStateData;
   }
 
-  private async getGlobalState(): Promise<MongooseGlobalStateDocument> {
+  private async getGlobalState(): Promise<
+    MongooseGlobalStateDocument & MongooseGlobalStateData
+  > {
     const globalStateDocument = await MongooseGlobalState.findOne().exec();
     if (globalStateDocument == null) {
       throw Error('Global state document does not exist');
@@ -131,7 +133,7 @@ export default class DatabaseServiceImpl implements DatabaseService {
         vote.weight !== 0 &&
         mongooseUser.votes.length > 0 &&
         mongooseUser.votes[0].createdAt >
-          getLastTallyTime(this.cachedGlobalStateData.tallyTimes)
+          getLastTallyTime(this.cachedGlobalStateData.tallies)
       ) {
         // User exceeded max votes
         throw Error('User exceeded max daily votes');

@@ -1,3 +1,4 @@
+import TallyData from '../types/TallyData';
 import User from '../types/User';
 import AuthServiceImpl, { AuthService } from './auth/AuthService';
 import UserAuthData from './auth/UserAuthData';
@@ -35,6 +36,9 @@ export interface ServerAppService {
   login(authHeader: string): Promise<UserAuthData | undefined>;
   logout(userAuth: UserAuthData): Promise<void>;
   getUser(authIdentifier: string): Promise<User | undefined>;
+
+  // Tally
+  tallyTopPost(): Promise<void>;
 }
 
 class ServerAppServiceImpl implements ServerAppService {
@@ -57,11 +61,12 @@ class ServerAppServiceImpl implements ServerAppService {
   /*
   Posts
    */
+
   async getPosts(params: GetPostsParams): Promise<GetPostsResult> {
     const { tallyIndex, minVoteScore } = params;
 
     const globalState = await this.databaseService.getGlobalStateData();
-    const numPastTallies = globalState.tallyTimes.length;
+    const numPastTallies = globalState.tallies.length;
 
     // Param
     if (tallyIndex < 0 || tallyIndex > numPastTallies) {
@@ -74,10 +79,12 @@ class ServerAppServiceImpl implements ServerAppService {
     // Get dates from tally index
     const startTime =
       tallyIndex < numPastTallies
-        ? globalState.tallyTimes[tallyIndex]
+        ? globalState.tallies[tallyIndex].tallyTime
         : undefined;
     const endTime =
-      tallyIndex > 0 ? globalState.tallyTimes[tallyIndex - 1] : undefined;
+      tallyIndex > 0
+        ? globalState.tallies[tallyIndex - 1].tallyTime
+        : undefined;
 
     const postDocuments = await this.databaseService.getPosts(
       getPostsFilter({ startTime, endTime, minVoteScore }),
@@ -126,6 +133,41 @@ class ServerAppServiceImpl implements ServerAppService {
     }
 
     return convertUserDocumentToUser(dbUser);
+  }
+
+  /*
+  Tally
+   */
+
+  async tallyTopPost(): Promise<void> {
+    const globalState = await this.databaseService.getGlobalStateData();
+
+    // Get top posts since last tally
+    const lastTallyTime =
+      globalState.tallies.length > 0
+        ? globalState.tallies[0].tallyTime
+        : undefined;
+
+    const postsByScore = await this.databaseService.getPosts(
+      getPostsFilter({
+        startTime: lastTallyTime,
+        minVoteScore: 1,
+      }),
+      getPostsSortBy({
+        voteScore: 'desc',
+        createdAt: 'desc',
+      })
+    );
+
+    const topPostId = postsByScore.length > 0 ? postsByScore[0].id : undefined;
+
+    const tallyData: TallyData = {
+      tallyTime: new Date(),
+      topPost: topPostId,
+    };
+
+    // Save to DB
+    await this.databaseService.recordTally(tallyData);
   }
 }
 

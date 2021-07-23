@@ -9,8 +9,17 @@ export type MongooseGlobalStateDocument = Document<MongooseGlobalStateData>;
 
 const GlobalStateSchema = new Schema<MongooseGlobalStateData>(
   {
-    tallyTimes: {
-      type: [{ type: Schema.Types.Date, required: true }],
+    tallies: {
+      type: [
+        {
+          tallyTime: { type: Date, required: true },
+          topPost: {
+            type: Schema.Types.ObjectId,
+            required: false,
+            ref: 'Post',
+          },
+        },
+      ],
       required: true,
       default: [],
     },

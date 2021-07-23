@@ -9,5 +9,5 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   const appService = await getServerAppService();
-  res.status(200).json(await appService.databaseService.getGlobalState());
+  res.status(200).json(await appService.databaseService.getGlobalStateData());
 }

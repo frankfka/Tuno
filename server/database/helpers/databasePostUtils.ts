@@ -14,7 +14,7 @@ export const getPostsFilter = ({
   minVoteScore,
 }: GetPostsFilterParams): any => {
   const voteScoreFilter = {
-    $gt: minVoteScore == null ? -1 : minVoteScore,
+    $gte: minVoteScore == null ? -1 : minVoteScore,
   };
 
   const createdAtFilter: Record<string, Date> = {};
