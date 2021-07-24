@@ -69,16 +69,7 @@ export default function NavigationBar() {
           <Box flexGrow={1} />
 
           {/*Right Items*/}
-          <div>
-            <Button
-              variant={isLoggedIn ? 'contained' : 'outlined'}
-              color="primary"
-              className={classes.createPostButton}
-            >
-              Create Post
-            </Button>
-            {profileOrLoginCta}
-          </div>
+          <div>{profileOrLoginCta}</div>
         </Toolbar>
       </AppBar>
       {/*Extra toolbar to give margin to page content*/}

@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) =>
 type LoginDialogProps = {
   isOpen: boolean;
   setIsOpen: (v: boolean) => void;
-  onLoginCompleted: () => void;
+  onLoginCompleted?: () => void;
 };
 
 // Main component
@@ -52,7 +52,7 @@ const LoginDialog = ({
 
     // TODO: future onboarding workflow
     setAttemptingLogin(false);
-    onLoginCompleted();
+    onLoginCompleted?.();
     setIsOpen(false);
   }
 

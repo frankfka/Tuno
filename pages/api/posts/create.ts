@@ -1,35 +1,44 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import getRequestSession from '../../../server/reqHandlerUtils/getRequestSession';
+import getRequestUser from '../../../server/reqHandlerUtils/getRequestUser';
 import sendUnauthorizedResponse from '../../../server/reqHandlerUtils/sendUnauthorizedResponse';
 import { getServerAppService } from '../../../server/serverAppService';
+import { CreatePostResult } from '../../../server/types/CreatePost';
+import EndpointResult from '../../../types/EndpointResult';
+import Post from '../../../types/Post';
 import PostContent from '../../../types/PostContent';
+import executeAsyncForResult from '../../../util/executeAsyncForResult';
+import resultToEndpointResult from '../../../util/resultToEndpointResult';
 
-type Data = {};
+const isValidRequestBody = (body: any): body is PostContent => {
+  // Simple check, can expand on this later
+  return body.title && body.contentType && body.source;
+};
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse<EndpointResult<CreatePostResult>>
 ) {
   const appService = await getServerAppService();
-  const session = await getRequestSession(req, appService);
 
-  if (session == null) {
-    sendUnauthorizedResponse(res);
-    return;
-  }
-
-  // TODO: extract getting user into getRequestSession / getRequestAuthor
-  const user = await appService.getUser(session.authIdentifier);
+  const user = await getRequestUser(req, appService);
   if (user == null) {
     sendUnauthorizedResponse(res);
     return;
   }
 
-  const post = await appService.databaseService.createPost(
-    req.body as PostContent,
-    user.id
-  );
-  console.log(post);
+  const reqBody = req.body;
 
-  res.status(200).json({ name: 'John Doe' });
+  if (!isValidRequestBody(reqBody)) {
+    res.status(400).json({ error: 'Invalid body' });
+    return;
+  }
+
+  const createPostResult = await executeAsyncForResult(() => {
+    return appService.createPost({
+      content: req.body,
+      authorId: user.id,
+    });
+  });
+
+  res.status(200).json(resultToEndpointResult(createPostResult));
 }

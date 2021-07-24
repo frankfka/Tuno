@@ -17,6 +17,7 @@ import {
   getPostsFilter,
   getPostsSortBy,
 } from './database/helpers/databasePostUtils';
+import { CreatePostParams, CreatePostResult } from './types/CreatePost';
 import { GetPostsParams, GetPostsResult } from './types/GetPosts';
 
 export interface ServerAppService {
@@ -30,6 +31,7 @@ export interface ServerAppService {
    */
 
   // Posts
+  createPost(params: CreatePostParams): Promise<CreatePostResult>;
   getPosts(params: GetPostsParams): Promise<GetPostsResult>;
 
   // Auth
@@ -61,6 +63,13 @@ class ServerAppServiceImpl implements ServerAppService {
   /*
   Posts
    */
+  async createPost(params: CreatePostParams): Promise<CreatePostResult> {
+    return {
+      id: (
+        await this.databaseService.createPost(params.content, params.authorId)
+      ).id,
+    };
+  }
 
   async getPosts(params: GetPostsParams): Promise<GetPostsResult> {
     const { tallyIndex, minVoteScore } = params;
