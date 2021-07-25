@@ -8,6 +8,7 @@ export type GetPostsParams = {
 };
 
 export type GetPostsResult = {
-  hasMore: boolean;
+  hasMoreTallies: boolean;
+  hasMorePostsForTally: boolean;
   posts: Post[];
 };

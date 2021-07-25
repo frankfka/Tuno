@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { Box, Button, NoSsr } from '@material-ui/core';
+import { Box, Button, Chip, Grid, NoSsr } from '@material-ui/core';
 import React, { useState } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -8,7 +8,9 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import AccountCircle from '@material-ui/icons/AccountCircle';
-import useUser from '../../../hooks/auth/useUser';
+import useGlobalState from '../../../hooks/useGlobalState';
+import useUser from '../../../hooks/useUser';
+import getUserNumRemainingVotes from '../../../util/getUserNumRemainingVotes';
 import LoginDialog from '../../Login/LoginDialog';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -25,6 +27,9 @@ const useStyles = makeStyles((theme: Theme) =>
     title: {
       flexGrow: 1,
     },
+    numRemainingVotes: {
+      marginRight: theme.spacing(2),
+    },
   })
 );
 
@@ -32,9 +37,15 @@ export default function NavigationBar() {
   const classes = useStyles();
 
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const { user, loading: loadingUser } = useUser({});
+  const { user, loading: loadingUser, swr: userSwr } = useUser({});
+  const { globalState } = useGlobalState();
 
-  const onLoginCompleted = () => {};
+  const showNumRemainingVotes = user != null && globalState != null;
+  const numRemainingVotes = getUserNumRemainingVotes(user, globalState);
+
+  const onLoginCompleted = () => {
+    userSwr.mutate();
+  };
 
   const isLoggedIn = user != null;
 
@@ -69,7 +80,18 @@ export default function NavigationBar() {
           <Box flexGrow={1} />
 
           {/*Right Items*/}
-          <div>{profileOrLoginCta}</div>
+          <div>
+            {showNumRemainingVotes && (
+              <Chip
+                color="primary"
+                label={`${numRemainingVotes.toFixed(0)} Vote${
+                  numRemainingVotes !== 1 ? 's' : ''
+                } Left`}
+                className={classes.numRemainingVotes}
+              />
+            )}
+            {profileOrLoginCta}
+          </div>
         </Toolbar>
       </AppBar>
       {/*Extra toolbar to give margin to page content*/}

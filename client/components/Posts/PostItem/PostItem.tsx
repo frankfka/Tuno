@@ -21,6 +21,8 @@ import VideoPostItemContent from './VideoPostItemContent';
 
 type Props = {
   post: Post;
+  showVoteButtons: boolean;
+  userHasMoreVotes: boolean;
   currentUserVote?: VoteType;
   onVoteClicked(postId: string, vote?: VoteType): void;
 };
@@ -39,6 +41,8 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const PostItem: React.FC<Props> = ({
   post,
+  showVoteButtons,
+  userHasMoreVotes,
   onVoteClicked,
   currentUserVote,
 }) => {
@@ -63,14 +67,19 @@ const PostItem: React.FC<Props> = ({
     <Paper className={classes.container}>
       <Grid container wrap="nowrap" spacing={4} alignItems="flex-start">
         <Grid item>
-          <PostItemVoteButtons
-            canCreateVote={true}
-            onVote={(v) => {
-              onVoteClicked(post.id, v);
-            }}
-            score={post.voteScore}
-            currentVote={currentUserVote}
-          />
+          {showVoteButtons ? (
+            <PostItemVoteButtons
+              canCreateVote={userHasMoreVotes}
+              onVote={(v) => {
+                onVoteClicked(post.id, v);
+              }}
+              score={post.voteScore}
+              currentVote={currentUserVote}
+            />
+          ) : (
+            // TODO: Nicer component
+            <Typography>{post.voteScore.toFixed(0)}</Typography>
+          )}
         </Grid>
         <Grid item xs>
           <Typography variant="caption" className={classes.postTitle}>

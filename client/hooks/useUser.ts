@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import Router from 'next/router';
 import useSWR, { mutate, SWRResponse } from 'swr';
-import EndpointResult from '../../../types/EndpointResult';
-import User from '../../../types/User';
+import EndpointResult from '../../types/EndpointResult';
+import User from '../../types/User';
 
 type RedirectPath = string;
 type UseUserVariables = {

@@ -1,3 +1,4 @@
+import GlobalState from '../types/GlobalState';
 import TallyData from '../types/TallyData';
 import User from '../types/User';
 import AuthServiceImpl, { AuthService } from './auth/AuthService';
@@ -30,6 +31,9 @@ export interface ServerAppService {
   Top level functions
    */
 
+  // Globals
+  getGlobalState(): Promise<GlobalState>;
+
   // Posts
   createPost(params: CreatePostParams): Promise<CreatePostResult>;
   getPosts(params: GetPostsParams): Promise<GetPostsResult>;
@@ -61,6 +65,13 @@ class ServerAppServiceImpl implements ServerAppService {
   }
 
   /*
+  Global
+   */
+  async getGlobalState(): Promise<GlobalState> {
+    return this.databaseService.getGlobalStateData();
+  }
+
+  /*
   Posts
    */
   async createPost(params: CreatePostParams): Promise<CreatePostResult> {
@@ -81,7 +92,8 @@ class ServerAppServiceImpl implements ServerAppService {
     if (tallyIndex < 0 || tallyIndex > numPastTallies) {
       return {
         posts: [],
-        hasMore: false,
+        hasMoreTallies: false,
+        hasMorePostsForTally: false,
       };
     }
 
@@ -106,7 +118,8 @@ class ServerAppServiceImpl implements ServerAppService {
 
     return {
       posts,
-      hasMore: tallyIndex === numPastTallies,
+      hasMoreTallies: tallyIndex === numPastTallies,
+      hasMorePostsForTally: false,
     };
   }
 

@@ -156,6 +156,7 @@ export default class DatabaseServiceImpl implements DatabaseService {
       if (vote.weight !== 0) {
         if (
           userVotes.length === this.cachedGlobalStateData.voteLimit &&
+          // We can just check the vote time, because historical posts can't be voted on
           userVotes[0].createdAt >
             getLastTallyTime(this.cachedGlobalStateData.tallies)
         ) {

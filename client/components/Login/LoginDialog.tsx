@@ -10,9 +10,7 @@ import {
 } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { useState } from 'react';
-import { GET_USER_SWR_KEY } from '../../hooks/auth/useUser';
 import loginWithMagic from './loginWithMagic';
-import { mutate } from 'swr';
 
 // Styles
 const useStyles = makeStyles((theme: Theme) =>
@@ -47,9 +45,6 @@ const LoginDialog = ({
   }
 
   async function onLoginSuccess() {
-    // Invalidate user
-    mutate(GET_USER_SWR_KEY);
-
     // TODO: future onboarding workflow
     setAttemptingLogin(false);
     onLoginCompleted?.();

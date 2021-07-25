@@ -1,10 +1,14 @@
-import { makeStyles, Snackbar } from '@material-ui/core';
+import { Divider, makeStyles, Snackbar } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
+import { mutate } from 'swr';
+import { GetPostsParams } from '../../../server/types/GetPosts';
+import EndpointResult from '../../../types/EndpointResult';
 import Post from '../../../types/Post';
+import User from '../../../types/User';
 import VoteForPost from '../../../types/VoteForPost';
 import getCidGatewayUrl from '../../../util/getCidGatewayUrl';
 import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
@@ -15,9 +19,14 @@ import ImagePostItemContent from '../../components/Posts/PostItem/ImagePostItemC
 import LinkPostItemContent from '../../components/Posts/PostItem/LinkPostItemContent';
 import PostItem from '../../components/Posts/PostItem/PostItem';
 import VideoPostItemContent from '../../components/Posts/PostItem/VideoPostItemContent';
-import useUser from '../../hooks/auth/useUser';
-import callVoteApi from '../../util/api/callVoteApi';
+import useUser, { GET_USER_SWR_KEY } from '../../hooks/useUser';
+import usePosts, { UsePostsVariables } from '../../hooks/usePosts';
+import callVoteApi, {
+  convertVoteForPostToWeight,
+} from '../../util/api/callVoteApi';
 import getUserVoteForPost from '../../util/getUserVoteForPost';
+import HomePostsContent from './HomePostsContent';
+import HomePagePickerBar from './HomePagePickerBar';
 
 const useStyles = makeStyles((theme) => ({}));
 
@@ -35,37 +44,6 @@ export default function HomePage() {
     user ? setShowCreatePostDialog(true) : setShowLoginDialog(true);
   };
 
-  // TODO: use Posts
-  const [posts, setPosts] = useState<Post[]>([]);
-
-  useEffect(() => {
-    (async () => {
-      const postsData = await fetch('/api/posts?tallyIndex=0');
-      const postJson = await postsData.json();
-
-      setPosts(postJson.data.posts as Post[]);
-    })();
-  }, []);
-
-  const onLogoutClicked = () => {
-    (async () => {
-      const resp = await fetch('/api/auth/logout');
-      const respJson = await resp.json();
-      console.log('Logged out', respJson);
-      location.reload();
-    })();
-  };
-
-  const onVoteClicked = async (postId: string, vote?: VoteForPost) => {
-    if (user == null) {
-      setShowLoginDialog(true);
-      return;
-    }
-
-    // TODO update data in usePosts then mutate
-    await callVoteApi(postId, vote);
-  };
-
   // Create post logic
   const [showCreatePostSuccessAlert, setShowCreatePostSuccessAlert] =
     useState(false);
@@ -73,11 +51,11 @@ export default function HomePage() {
     setShowCreatePostSuccessAlert(false);
 
   const onPostCreate = (postId: string) => {
-    console.log('On post create', postId);
     setShowCreatePostDialog(false);
     setShowCreatePostSuccessAlert(true);
   };
 
+  // TODO: loading (maybe have a wrapper?)
   return (
     <div>
       <Head>
@@ -111,33 +89,7 @@ export default function HomePage() {
       {/*Login Dialog*/}
       <LoginDialog isOpen={showLoginDialog} setIsOpen={setShowLoginDialog} />
 
-      {/*Scrap*/}
-      <div>
-        {user && (
-          <div>
-            <p>Current user:</p>
-            <pre>{JSON.stringify(user, null, 2)}</pre>
-            <button onClick={onLogoutClicked}>Log Out</button>
-          </div>
-        )}
-      </div>
-
-      <div>
-        {posts.map((post) => {
-          return (
-            <div style={{ margin: 12 }}>
-              <PostItem
-                post={post}
-                key={post.id}
-                onVoteClicked={onVoteClicked}
-                currentUserVote={
-                  user ? getUserVoteForPost(post, user) : undefined
-                }
-              />
-            </div>
-          );
-        })}
-      </div>
+      <HomePostsContent setShowLoginDialog={setShowLoginDialog} />
     </div>
   );
 }

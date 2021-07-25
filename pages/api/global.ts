@@ -1,13 +1,22 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerAppService } from '../../server/serverAppService';
+import EndpointResult from '../../types/EndpointResult';
 import GlobalState from '../../types/GlobalState';
-
-type Data = GlobalState;
+import executeAsyncForResult from '../../util/executeAsyncForResult';
+import resultToEndpointResult from '../../util/resultToEndpointResult';
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse<EndpointResult<GlobalState>>
 ) {
+  if (req.method !== 'GET') {
+    res.status(400).json({ error: 'Invalid method' });
+    return;
+  }
+
   const appService = await getServerAppService();
-  res.status(200).json(await appService.databaseService.getGlobalStateData());
+  const globalStateResult = await executeAsyncForResult(async () =>
+    appService.getGlobalState()
+  );
+  res.status(200).json(resultToEndpointResult(globalStateResult));
 }
