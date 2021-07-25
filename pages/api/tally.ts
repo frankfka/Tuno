@@ -14,10 +14,6 @@ export default async function handler(
 
   // TODO: Auth here
   const appService = await getServerAppService();
-  // await appService.blockchainService.mintTopPostNFT(
-  //   '0xF7218d3b5719DbF8d44091B829b81438A8f5f576',
-  //   ''
-  // );
 
   await appService.tallyTopPost();
 

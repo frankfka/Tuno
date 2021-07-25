@@ -1,7 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import getRequestSession from '../../../server/reqHandlerUtils/getRequestSession';
+import getRequestUser from '../../../server/reqHandlerUtils/getRequestUser';
 import sendUnauthorizedResponse from '../../../server/reqHandlerUtils/sendUnauthorizedResponse';
 import { getServerAppService } from '../../../server/serverAppService';
+import EndpointResult from '../../../types/EndpointResult';
+import executeAsyncForResult from '../../../util/executeAsyncForResult';
+import resultToEndpointResult from '../../../util/resultToEndpointResult';
 
 type ValidVoteRequestBody = {
   postId: string;
@@ -18,7 +22,7 @@ const isValidRequestBody = (body: any): body is ValidVoteRequestBody => {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse<EndpointResult<void>>
 ) {
   // Check request
   if (req.method !== 'POST') {
@@ -33,22 +37,18 @@ export default async function handler(
   }
 
   const appService = await getServerAppService();
-  const session = await getRequestSession(req, appService);
+  const user = await getRequestUser(req, appService);
 
-  if (session == null) {
-    sendUnauthorizedResponse(res);
-    return;
-  }
-
-  const user = await appService.getUser(session.authIdentifier);
   if (user == null) {
     sendUnauthorizedResponse(res);
     return;
   }
 
-  await appService.databaseService.voteOnPost(user.id, {
-    post: reqBody.postId,
-    weight: reqBody.voteWeight,
+  const voteResult = await executeAsyncForResult(async () => {
+    return appService.databaseService.voteOnPost(user.id, {
+      post: reqBody.postId,
+      weight: reqBody.voteWeight,
+    });
   });
-  res.status(200).json({});
+  res.status(200).json(resultToEndpointResult(voteResult));
 }

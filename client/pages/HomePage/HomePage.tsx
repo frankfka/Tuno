@@ -5,12 +5,19 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
 import Post from '../../../types/Post';
+import VoteForPost from '../../../types/VoteForPost';
 import getCidGatewayUrl from '../../../util/getCidGatewayUrl';
 import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
 import CreatePostDialog from '../../components/CreatePost/CreatePostDialog';
 import CreatePostFab from '../../components/CreatePost/CreatePostFab';
 import LoginDialog from '../../components/Login/LoginDialog';
+import ImagePostItemContent from '../../components/Posts/PostItem/ImagePostItemContent';
+import LinkPostItemContent from '../../components/Posts/PostItem/LinkPostItemContent';
+import PostItem from '../../components/Posts/PostItem/PostItem';
+import VideoPostItemContent from '../../components/Posts/PostItem/VideoPostItemContent';
 import useUser from '../../hooks/auth/useUser';
+import callVoteApi from '../../util/api/callVoteApi';
+import getUserVoteForPost from '../../util/getUserVoteForPost';
 
 const useStyles = makeStyles((theme) => ({}));
 
@@ -49,20 +56,14 @@ export default function HomePage() {
     })();
   };
 
-  const onVoteClicked = (postId: string) => {
-    (async () => {
-      const resp = await fetch(`/api/posts/vote`, {
-        method: 'POST',
-        body: JSON.stringify({
-          postId: postId,
-          voteWeight: 1,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      console.log('Voted');
-    })();
+  const onVoteClicked = async (postId: string, vote?: VoteForPost) => {
+    if (user == null) {
+      setShowLoginDialog(true);
+      return;
+    }
+
+    // TODO update data in usePosts then mutate
+    await callVoteApi(postId, vote);
   };
 
   // Create post logic
@@ -110,6 +111,7 @@ export default function HomePage() {
       {/*Login Dialog*/}
       <LoginDialog isOpen={showLoginDialog} setIsOpen={setShowLoginDialog} />
 
+      {/*Scrap*/}
       <div>
         {user && (
           <div>
@@ -118,47 +120,20 @@ export default function HomePage() {
             <button onClick={onLogoutClicked}>Log Out</button>
           </div>
         )}
-        {user == null && <Link href="/login">Login</Link>}
       </div>
-
-      <Link href="/create">
-        <a>Create</a>
-      </Link>
 
       <div>
         {posts.map((post) => {
-          const source =
-            post.source.type === 'ipfs'
-              ? getCidGatewayUrl(post.source.value)
-              : post.source.value;
-          let contentElement = (
-            <a href={source} target="_blank" rel="noreferrer">
-              Content Link
-            </a>
-          );
-          if (post.contentType === 'img') {
-            contentElement = <img src={source} />;
-          } else if (post.contentType === 'av') {
-            contentElement = <ReactPlayer url={source} controls />;
-          }
-
           return (
-            <div
-              style={{ margin: 40, border: '1px solid black' }}
-              key={post.id}
-            >
-              <h3>{post.title}</h3>
-              <p>{post.createdAt}</p>
-              {contentElement}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  onVoteClicked(post.id);
-                }}
-              >
-                Vote
-              </button>
-              <p>Votes: {post.voteScore}</p>
+            <div style={{ margin: 12 }}>
+              <PostItem
+                post={post}
+                key={post.id}
+                onVoteClicked={onVoteClicked}
+                currentUserVote={
+                  user ? getUserVoteForPost(post, user) : undefined
+                }
+              />
             </div>
           );
         })}

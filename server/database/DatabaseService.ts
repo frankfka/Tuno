@@ -123,20 +123,10 @@ export default class DatabaseServiceImpl implements DatabaseService {
         userId,
         {},
         { session }
-      ).slice('votes', -this.cachedGlobalStateData.voteLimit);
+      ).slice('votes', -this.cachedGlobalStateData.voteLimit); // First vote here is the earliest
 
       if (mongooseUser == null) {
         throw Error('User does not exist');
-      }
-
-      if (
-        vote.weight !== 0 &&
-        mongooseUser.votes.length > 0 &&
-        mongooseUser.votes[0].createdAt >
-          getLastTallyTime(this.cachedGlobalStateData.tallies)
-      ) {
-        // User exceeded max votes
-        throw Error('User exceeded max daily votes');
       }
 
       // Now get the post
@@ -150,7 +140,7 @@ export default class DatabaseServiceImpl implements DatabaseService {
         throw Error('Post does not exist');
       }
 
-      let scoreUpdate = vote.weight;
+      let scoreUpdate = 0;
 
       // Update array of user votes, make a copy of the existing votes, modify it, and then set it on the mongoose object
       const userVotes = mongooseUser.toObject().votes;
@@ -164,10 +154,20 @@ export default class DatabaseServiceImpl implements DatabaseService {
 
       // If the vote is valid (i.e. not 0, which indicates a deletion, push the new vote)
       if (vote.weight !== 0) {
-        userVotes.push({
-          ...vote,
-          createdAt: new Date(),
-        });
+        if (
+          userVotes.length === this.cachedGlobalStateData.voteLimit &&
+          userVotes[0].createdAt >
+            getLastTallyTime(this.cachedGlobalStateData.tallies)
+        ) {
+          // User exceeded max votes
+          console.error('User exceeded max votes, not counting this vote');
+        } else {
+          userVotes.push({
+            ...vote,
+            createdAt: new Date(),
+          });
+          scoreUpdate += vote.weight;
+        }
       }
 
       mongooseUser.votes = userVotes;

@@ -3,6 +3,7 @@ import { Contract } from 'web3-eth-contract';
 import topPostTokenContractAbi from './contracts/topPostTokenContractAbi';
 
 export interface BlockchainService {
+  test(): Promise<void>;
   mintTopPostNFT(authorAddress: string, metadataUri: string): Promise<void>;
 }
 
@@ -12,15 +13,14 @@ export class BlockchainServiceImpl implements BlockchainService {
   private readonly topPostTokenContract: Contract;
 
   constructor() {
-    const url =
-      'https://polygon-mumbai.g.alchemy.com/v2/mSks1Uh4Qte5tMHqbg5V0BSiXXmn2JM-';
+    const url = 'HTTP://127.0.0.1:7545';
 
     // Using web3js
     this.web3 = new Web3(url);
 
     this.topPostTokenContract = new this.web3.eth.Contract(
       topPostTokenContractAbi,
-      '0x62615e397aa63677bA7c749f9Cd7D607Ed5202eB'
+      '0x900C2941e3ad648fD9900818a4DafDf04341a8a8' // '0x62615e397aa63677bA7c749f9Cd7D607Ed5202eB'
     );
 
     // const test = contract.methods
@@ -34,10 +34,19 @@ export class BlockchainServiceImpl implements BlockchainService {
     // console.log(contract.methods);
   }
 
+  async test() {
+    console.log(
+      await this.topPostTokenContract.methods
+        .balanceOf('0xcF6cA736f2994cC5C0Bb595232634A03E85e9293')
+        .call()
+    );
+    console.log(await this.topPostTokenContract.methods.tokenURI(1).call());
+  }
+
   // TODO: Need to store metadata in IPFS
   async mintTopPostNFT(authorAddress: string, metadataUri: string) {
     const privateKey =
-      '177338130308784b4e4f5a0374accfd149213e44787bfc6ed671187d4c7dd15c';
+      '766914641fe8abfee2f03dc42506790b5f6942559adbd1b0b9ed06e9e9d9fda1';
     const account =
       this.web3.eth.accounts.privateKeyToAccount(privateKey).address;
 
@@ -45,8 +54,8 @@ export class BlockchainServiceImpl implements BlockchainService {
     console.log(account);
 
     const transaction = this.topPostTokenContract.methods.awardTopPost(
-      authorAddress,
-      metadataUri
+      '0xcF6cA736f2994cC5C0Bb595232634A03E85e9293',
+      'test'
     );
 
     console.log('TXN');
