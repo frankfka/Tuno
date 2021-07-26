@@ -1,3 +1,4 @@
+import { SafeUserWeb3Account } from './UserWeb3Account';
 import Vote from './Vote';
 
 export default interface User {
@@ -12,7 +13,10 @@ export default interface User {
     username:
   }
 
+  TODO: Eth accounts
    */
+  web3?: SafeUserWeb3Account; // Don't expose the full account details
+
   // Votes
   lastVotedAt: Date; // Indicates whether we should wipe votes
   votes: Vote[];

@@ -13,11 +13,6 @@ const GlobalStateSchema = new Schema<MongooseGlobalStateData>(
       type: [
         {
           tallyTime: { type: Date, required: true },
-          topPost: {
-            type: Schema.Types.ObjectId,
-            required: false,
-            ref: 'Post',
-          },
         },
       ],
       required: true,

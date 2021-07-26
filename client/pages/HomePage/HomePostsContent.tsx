@@ -106,6 +106,7 @@ const HomePostsContent: React.FC<Props> = ({ setShowLoginDialog }) => {
       </Card>
       {/*TODO Back to top https://material-ui.com/components/app-bar/#back-to-top*/}
       <div>
+        {/*TODO enable vote click if not logged in, then show dialog*/}
         {postsData?.posts.map((post) => {
           return (
             <Card key={post.id} className={classes.postItemContainer}>
@@ -116,10 +117,7 @@ const HomePostsContent: React.FC<Props> = ({ setShowLoginDialog }) => {
                   user != null ? getUserVoteForPost(post, user) : undefined
                 }
                 userHasMoreVotes={
-                  // TODO extract
-                  user != null && globalState != null
-                    ? getUserNumRemainingVotes(user, globalState) > 0
-                    : false
+                  getUserNumRemainingVotes(user, globalState) > 0
                 }
                 showVoteButtons={usePostsVariables.tallyIndex === 0}
               />

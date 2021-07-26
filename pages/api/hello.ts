@@ -6,10 +6,11 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const appService = await getServerAppService();
-  const result = await appService.blockchainService.test();
-  // const result = await appService.blockchainService.mintTopPostNFT(
-  //   '0xEAe27Ae6412147Ed6d5692Fd91709DaD6dbfc342',
-  //   'MetadataURI'
-  // );
+  const result = await appService.ipfsService.saveAwardMetadata('testfile', {
+    authorEmail: 'testemail@gmail.com',
+    createdAt: new Date(),
+    postSource: 'someSource',
+    voteScore: 0,
+  });
   res.status(200).json(result);
 }

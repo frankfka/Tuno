@@ -1,6 +1,10 @@
+import { format } from 'date-fns';
+
+import Award from '../types/Award';
 import GlobalState from '../types/GlobalState';
 import TallyData from '../types/TallyData';
 import User from '../types/User';
+import UserWeb3Account from '../types/UserWeb3Account';
 import AuthServiceImpl, { AuthService } from './auth/AuthService';
 import UserAuthData from './auth/UserAuthData';
 import {
@@ -18,6 +22,10 @@ import {
   getPostsFilter,
   getPostsSortBy,
 } from './database/helpers/databasePostUtils';
+import { MongoosePostData } from './database/models/MongoosePost';
+import { MongooseUserData } from './database/models/MongooseUser';
+import IpfsAwardMetadata from './ipfs/IpfsAwardMetadata';
+import IpfsServiceImpl, { IpfsService } from './ipfs/IpfsService';
 import { CreatePostParams, CreatePostResult } from './types/CreatePost';
 import { GetPostsParams, GetPostsResult } from './types/GetPosts';
 
@@ -26,6 +34,7 @@ export interface ServerAppService {
   databaseService: DatabaseService;
   authService: AuthService;
   blockchainService: BlockchainService;
+  ipfsService: IpfsService;
 
   /*
   Top level functions
@@ -55,6 +64,7 @@ class ServerAppServiceImpl implements ServerAppService {
   databaseService!: DatabaseService;
   authService!: AuthService;
   blockchainService!: BlockchainService;
+  ipfsService!: IpfsService;
 
   async init() {
     this.databaseService = new DatabaseServiceImpl();
@@ -62,6 +72,7 @@ class ServerAppServiceImpl implements ServerAppService {
 
     this.authService = new AuthServiceImpl();
     this.blockchainService = new BlockchainServiceImpl();
+    this.ipfsService = new IpfsServiceImpl();
   }
 
   /*
@@ -135,7 +146,9 @@ class ServerAppServiceImpl implements ServerAppService {
       return;
     }
 
-    let user = await this.databaseService.getUser(userAuth.authIdentifier);
+    let user = await this.databaseService.getUserByAuthId(
+      userAuth.authIdentifier
+    );
     if (user == null) {
       console.log('No current user exists for this auth, creating new user');
       user = await this.databaseService.createUser(userAuth);
@@ -149,7 +162,7 @@ class ServerAppServiceImpl implements ServerAppService {
   }
 
   async getUser(authIdentifier: string): Promise<User | undefined> {
-    const dbUser = await this.databaseService.getUser(authIdentifier);
+    const dbUser = await this.databaseService.getUserByAuthId(authIdentifier);
     if (dbUser == null) {
       return;
     }
@@ -181,15 +194,105 @@ class ServerAppServiceImpl implements ServerAppService {
       })
     );
 
-    const topPostId = postsByScore.length > 0 ? postsByScore[0].id : undefined;
+    const topPost = postsByScore.length > 0 ? postsByScore[0] : undefined;
+
+    // Skip this tally if there are no posts, or no votes
+    if (topPost == null) {
+      console.log('No top posts, skipping this tally');
+      return;
+    }
+
+    // Get author (TODO: just use populate)
+    const author = await this.databaseService.getUserById(topPost.author);
+
+    if (author == null) {
+      throw Error('No user associated with top post with ID ' + topPost.id);
+    }
+
+    // Get the web3 account for the user, creating and saving a new one if not exists
+    let web3Account = author.web3;
+    if (web3Account == null) {
+      console.log('Author does not have a Web 3 account, making one.');
+
+      web3Account = await this.blockchainService.createWeb3Account();
+      await this.databaseService.saveWeb3AccountForUser(
+        topPost.author,
+        web3Account
+      );
+
+      console.log(
+        'Saved web3 account for author:',
+        author.id,
+        'address:',
+        web3Account.address
+      );
+    }
+
+    // TODO Extract creating this stuff into another file
+    const dateStr = format(topPost.createdAt, 'yyyy-MM-dd');
+    const tokenName = 'TPA-' + dateStr;
+    const tokenDescription = `Top post award token for tally on ${dateStr}`;
+    const imageUri = ''; // TODO
+
+    // Create metadata
+    const topPostMetadata: IpfsAwardMetadata = {
+      name: tokenName,
+      description: tokenDescription,
+      image: imageUri,
+      authorAddress: web3Account.address,
+      createdAt: topPost.createdAt,
+      postSource: topPost.source.value,
+      voteScore: topPost.voteScore,
+    };
+
+    // Save metadata as JSON to IPFS
+    const savedMetadataHash = await this.ipfsService.saveAwardMetadata(
+      tokenName, // Token name as file name
+      topPostMetadata
+    );
+    const savedMetadataUri = 'ipfs://' + savedMetadataHash;
+
+    console.log('Saved token metadata at URI', savedMetadataUri);
+
+    // Call blockchain to mint token
+    const mintTransactionResult = await this.blockchainService.mintTopPostNFT(
+      web3Account.address,
+      savedMetadataUri
+    );
+
+    console.log(
+      'Minted top post NFT with hash',
+      mintTransactionResult.transactionHash
+    );
+
+    // Create the award object and save it
+    const award: Omit<Award, 'id'> = {
+      createdAt: new Date(),
+      ipfsMetadata: topPostMetadata,
+      refs: {
+        author: author.id,
+        post: topPost.id,
+      },
+      tokenData: mintTransactionResult,
+    };
+    const savedAward = await this.databaseService.saveAward(award);
+
+    console.log('Saved new award to DB with ID', savedAward.id);
+
+    // Update post with the saved award
+    await this.databaseService.awardPost(topPost.id, savedAward.id);
+
+    console.log('Updated post with award');
 
     const tallyData: TallyData = {
       tallyTime: new Date(),
-      topPost: topPostId,
+      awards: [savedAward.id],
     };
 
     // Save to DB
     await this.databaseService.recordTally(tallyData);
+
+    console.log('Record tally completed with saved tally ID');
   }
 }
 

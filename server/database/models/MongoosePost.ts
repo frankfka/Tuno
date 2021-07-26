@@ -5,7 +5,8 @@ export type MongoosePostData = Post;
 
 export type MongoosePostModel = Model<MongoosePostData>;
 
-export type MongoosePostDocument = Document<MongoosePostData>;
+export type MongoosePostDocument = Document<MongoosePostData> &
+  MongoosePostData;
 
 const PostSchema = new Schema<MongoosePostData>({
   createdAt: { type: Schema.Types.Date, required: true, default: Date.now },
@@ -20,6 +21,17 @@ const PostSchema = new Schema<MongoosePostData>({
     type: Schema.Types.Number,
     required: true,
     default: 0,
+  },
+  awards: {
+    type: [
+      {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Award',
+      },
+    ],
+    required: false,
+    default: [],
   },
 });
 

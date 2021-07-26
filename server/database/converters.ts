@@ -1,3 +1,4 @@
+import { omit } from 'lodash';
 import Post from '../../types/Post';
 import User from '../../types/User';
 import { MongoosePostData, MongoosePostDocument } from './models/MongoosePost';
@@ -17,6 +18,9 @@ export const convertUserDocumentToUser = (
   userDocument: MongooseUserDocument
 ): User => {
   const documentObj = userDocument.toObject<MongooseUserData>();
+  // Remove private key from document
+  omit(documentObj, ['web3', 'privateKey']);
+
   return {
     ...documentObj,
     id: userDocument.id,

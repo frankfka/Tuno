@@ -2,10 +2,12 @@ import Web3 from 'web3';
 import { Account } from 'web3-core';
 import { Contract } from 'web3-eth-contract';
 import jsonFetcher from '../../client/util/jsonFetcher';
+import UserWeb3Account from '../../types/UserWeb3Account';
 import topPostTokenContractAbi from './contracts/topPostTokenContractAbi';
 import MintTransactionResult from './MintTransactionResult';
 
 export interface BlockchainService {
+  createWeb3Account(): Promise<UserWeb3Account>;
   mintTopPostNFT(
     authorAddress: string,
     metadataUri: string
@@ -53,6 +55,10 @@ export class BlockchainServiceImpl implements BlockchainService {
     this.signingAccount = this.web3.eth.accounts.privateKeyToAccount(
       signingAccountPrivateKey
     );
+  }
+
+  async createWeb3Account(): Promise<UserWeb3Account> {
+    return this.web3.eth.accounts.create();
   }
 
   async mintTopPostNFT(

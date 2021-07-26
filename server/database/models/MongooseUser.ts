@@ -1,15 +1,19 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 import User from '../../../types/User';
+import UserWeb3Account from '../../../types/UserWeb3Account';
 import UserAuthData from '../../auth/UserAuthData';
 
 export interface MongooseUserData extends User {
   // Add auth information to DB
   auth: UserAuthData;
+  // Add full web3 account (not just address)
+  web3?: UserWeb3Account;
 }
 
 export type MongooseUserModel = Model<MongooseUserData>;
 
-export type MongooseUserDocument = Document<MongooseUserData>;
+export type MongooseUserDocument = Document<MongooseUserData> &
+  MongooseUserData;
 
 const UserSchema = new Schema<MongooseUserData>({
   createdAt: { type: Date, required: true, default: Date.now },
@@ -28,6 +32,20 @@ const UserSchema = new Schema<MongooseUserData>({
     ],
     required: true,
     default: [],
+  },
+  // Web 3 account
+  web3: {
+    type: {
+      address: {
+        type: Schema.Types.String,
+        required: true,
+      },
+      privateKey: {
+        type: Schema.Types.String,
+        required: true,
+      },
+    },
+    required: false,
   },
 });
 

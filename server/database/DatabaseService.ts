@@ -1,33 +1,25 @@
-import {
-  FilterQuery,
-  Model,
-  Mongoose,
-  QueryWithHelpers,
-  Schema,
-} from 'mongoose';
+import { FilterQuery, Mongoose } from 'mongoose';
 import { remove } from 'lodash';
-import GlobalState from '../../types/GlobalState';
+import Award from '../../types/Award';
 import PostContent from '../../types/PostContent';
 import TallyData from '../../types/TallyData';
+import UserWeb3Account from '../../types/UserWeb3Account';
 import { CreateVoteParams } from '../../types/Vote';
 import getLastTallyTime from '../../util/getLastTallyTime';
 import UserAuthData from '../auth/UserAuthData';
 import getMongooseConnection from './getMongooseConnection';
+import MongooseAward, { MongooseAwardDocument } from './models/MongooseAward';
 import MongooseGlobalState, {
   MongooseGlobalStateData,
   MongooseGlobalStateDocument,
 } from './models/MongooseGlobalState';
 import MongoosePost, { MongoosePostDocument } from './models/MongoosePost';
-import MongooseUser, {
-  MongooseUserData,
-  MongooseUserDocument,
-} from './models/MongooseUser';
+import MongooseUser, { MongooseUserDocument } from './models/MongooseUser';
 
 export interface DatabaseService {
   init(): Promise<void>;
 
   // Global
-  recordTally(tally: TallyData): Promise<void>;
   getGlobalStateData(): Promise<MongooseGlobalStateData>;
 
   // Posts
@@ -40,12 +32,21 @@ export interface DatabaseService {
     sortBy?: any
   ): Promise<MongoosePostDocument[]>;
   voteOnPost(userId: string, vote: CreateVoteParams): Promise<void>;
+  awardPost(postId: string, awardId: string): Promise<void>;
 
   // Tallying
+  recordTally(tally: TallyData): Promise<void>;
+  getAward(id: string): Promise<MongooseAwardDocument | null>;
+  saveAward(awardData: Omit<Award, 'id'>): Promise<MongooseAwardDocument>;
 
   // Users
   createUser(authData: UserAuthData): Promise<MongooseUserDocument>;
-  getUser(authIdentifier: string): Promise<MongooseUserDocument | null>;
+  getUserByAuthId(authIdentifier: string): Promise<MongooseUserDocument | null>;
+  getUserById(id: string): Promise<MongooseUserDocument | null>;
+  saveWeb3AccountForUser(
+    id: string,
+    web3Account: UserWeb3Account
+  ): Promise<void>;
 }
 
 export default class DatabaseServiceImpl implements DatabaseService {
@@ -61,14 +62,6 @@ export default class DatabaseServiceImpl implements DatabaseService {
   /*
   Globals
    */
-
-  async recordTally(tally: TallyData) {
-    const globalStateDoc = await this.getGlobalState();
-    globalStateDoc.tallies.unshift(tally);
-    await globalStateDoc.save();
-
-    this.cachedGlobalStateData = globalStateDoc.toObject();
-  }
 
   async getGlobalStateData(): Promise<MongooseGlobalStateData> {
     return this.cachedGlobalStateData;
@@ -143,7 +136,7 @@ export default class DatabaseServiceImpl implements DatabaseService {
       let scoreUpdate = 0;
 
       // Update array of user votes, make a copy of the existing votes, modify it, and then set it on the mongoose object
-      const userVotes = mongooseUser.toObject().votes;
+      const userVotes = Array.from(mongooseUser.votes);
 
       // Remove any existing votes for the post
       const existingVotesForPost = remove(
@@ -182,6 +175,40 @@ export default class DatabaseServiceImpl implements DatabaseService {
     });
   }
 
+  async awardPost(postId: string, awardId: string): Promise<void> {
+    await MongoosePost.findByIdAndUpdate(postId, {
+      $push: {
+        awards: awardId,
+      },
+    });
+  }
+
+  /*
+  Tallying
+   */
+
+  async recordTally(tally: TallyData) {
+    const globalStateDoc = await this.getGlobalState();
+    globalStateDoc.tallies.unshift(tally);
+    await globalStateDoc.save();
+
+    this.cachedGlobalStateData = globalStateDoc.toObject();
+  }
+
+  async saveAward(
+    awardData: Omit<Award, 'id'>
+  ): Promise<MongooseAwardDocument> {
+    return MongooseAward.create(awardData);
+  }
+
+  async getAward(id: string): Promise<MongooseAwardDocument | null> {
+    return MongooseAward.findById(id).exec();
+  }
+
+  /*
+  Users
+   */
+
   async createUser(authData: UserAuthData): Promise<MongooseUserDocument> {
     return MongooseUser.create({
       email: authData.email,
@@ -192,7 +219,9 @@ export default class DatabaseServiceImpl implements DatabaseService {
     });
   }
 
-  async getUser(authIdentifier: string): Promise<MongooseUserDocument | null> {
+  async getUserByAuthId(
+    authIdentifier: string
+  ): Promise<MongooseUserDocument | null> {
     return (
       MongooseUser.findOne({
         'auth.authIdentifier': authIdentifier,
@@ -201,5 +230,23 @@ export default class DatabaseServiceImpl implements DatabaseService {
         .slice('votes', -this.cachedGlobalStateData.voteLimit)
         .exec()
     );
+  }
+
+  async getUserById(id: string): Promise<MongooseUserDocument | null> {
+    return (
+      MongooseUser.findById(id)
+        // Limit to the maximum of today's votes
+        .slice('votes', -this.cachedGlobalStateData.voteLimit)
+        .exec()
+    );
+  }
+
+  async saveWeb3AccountForUser(
+    id: string,
+    web3Account: UserWeb3Account
+  ): Promise<void> {
+    await MongooseUser.findByIdAndUpdate(id, {
+      web3: web3Account,
+    }).exec();
   }
 }
