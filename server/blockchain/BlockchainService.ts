@@ -1,87 +1,111 @@
 import Web3 from 'web3';
+import { Account } from 'web3-core';
 import { Contract } from 'web3-eth-contract';
+import jsonFetcher from '../../client/util/jsonFetcher';
 import topPostTokenContractAbi from './contracts/topPostTokenContractAbi';
+import MintTransactionResult from './MintTransactionResult';
 
 export interface BlockchainService {
-  test(): Promise<void>;
-  mintTopPostNFT(authorAddress: string, metadataUri: string): Promise<void>;
+  mintTopPostNFT(
+    authorAddress: string,
+    metadataUri: string
+  ): Promise<MintTransactionResult>;
 }
+
+type GasPriceResponse = {
+  standard: number;
+  fast: number;
+  fastest: number;
+};
+
+/*
+Localhost: http://127.0.0.1:7545
+Localhost contract: 0x900C2941e3ad648fD9900818a4DafDf04341a8a8
+Mumbai: https://polygon-mumbai.g.alchemy.com/v2/mSks1Uh4Qte5tMHqbg5V0BSiXXmn2JM-
+Mumbai contract: 0x9AA0F6CCE9EAefc400A1a5350c1EbF87d4111509
+ */
 
 export class BlockchainServiceImpl implements BlockchainService {
   private readonly web3: Web3;
-
   private readonly topPostTokenContract: Contract;
+  private readonly signingAccount: Account;
 
   constructor() {
-    const url = 'HTTP://127.0.0.1:7545';
+    const maticEndpoint = process.env.MATIC_ENDPOINT;
+    const signingAccountPrivateKey = process.env.MATIC_PRIVATE_KEY;
+    const contractAddress = process.env.MATIC_CONTRACT_ADDRESS;
 
-    // Using web3js
-    this.web3 = new Web3(url);
+    if (
+      maticEndpoint == null ||
+      signingAccountPrivateKey == null ||
+      contractAddress == null
+    ) {
+      throw Error('Required env vars not defined');
+    }
+
+    this.web3 = new Web3(maticEndpoint);
 
     this.topPostTokenContract = new this.web3.eth.Contract(
       topPostTokenContractAbi,
-      '0x900C2941e3ad648fD9900818a4DafDf04341a8a8' // '0x62615e397aa63677bA7c749f9Cd7D607Ed5202eB'
+      contractAddress
     );
 
-    // const test = contract.methods
-    //   .MINTER_ROLE()
-    //   .call()
-    //   .then((res) => {
-    //     console.log('Test complete!');
-    //     console.log(res);
-    //   });
-    //
-    // console.log(contract.methods);
-  }
-
-  async test() {
-    console.log(
-      await this.topPostTokenContract.methods
-        .balanceOf('0xcF6cA736f2994cC5C0Bb595232634A03E85e9293')
-        .call()
+    this.signingAccount = this.web3.eth.accounts.privateKeyToAccount(
+      signingAccountPrivateKey
     );
-    console.log(await this.topPostTokenContract.methods.tokenURI(1).call());
   }
 
-  // TODO: Need to store metadata in IPFS
-  async mintTopPostNFT(authorAddress: string, metadataUri: string) {
-    const privateKey =
-      '766914641fe8abfee2f03dc42506790b5f6942559adbd1b0b9ed06e9e9d9fda1';
-    const account =
-      this.web3.eth.accounts.privateKeyToAccount(privateKey).address;
-
-    console.log('ACCOUNT');
-    console.log(account);
-
+  async mintTopPostNFT(
+    authorAddress: string,
+    metadataUri: string
+  ): Promise<MintTransactionResult> {
     const transaction = this.topPostTokenContract.methods.awardTopPost(
-      '0xcF6cA736f2994cC5C0Bb595232634A03E85e9293',
-      'test'
+      authorAddress,
+      metadataUri
     );
 
-    console.log('TXN');
-    console.log(transaction);
+    // Get gas prices, using the quoted "fast" gas price in Gwei
+    const gasPriceInWei = (await this.getGasPricesInGWei()).fast * 10 ** 9;
 
-    console.log('Gas');
-    console.log(await transaction.estimateGas({ from: account }));
-
-    const signed = await this.web3.eth.accounts.signTransaction(
+    const signedTransaction = await this.web3.eth.accounts.signTransaction(
       {
         to: transaction._parent._address,
-        from: account,
+        from: this.signingAccount.address,
         data: transaction.encodeABI(),
-        gas: await transaction.estimateGas({ from: account }),
-        gasPrice: 500,
+        gas: await transaction.estimateGas({
+          from: this.signingAccount.address,
+        }),
+        gasPrice: gasPriceInWei,
       },
-      privateKey
+      this.signingAccount.privateKey
     );
 
-    console.log('SIGNED');
-    console.log(signed);
-    const receipt = await this.web3.eth.sendSignedTransaction(
-      signed.rawTransaction!
+    if (signedTransaction.rawTransaction == null) {
+      throw Error('Raw transaction is not defined');
+    }
+
+    const transactionReceipt = await this.web3.eth.sendSignedTransaction(
+      signedTransaction.rawTransaction
     );
 
-    console.log('RECEIPT');
-    console.log(receipt);
+    const mintedTokenId = await this.getLastMintedTokenId();
+
+    const transactionHash = transactionReceipt.transactionHash;
+
+    return {
+      tokenId: mintedTokenId,
+      transactionHash,
+      chain: 'matic-mumbai',
+      authorAddress,
+      metadataUri,
+    };
+  }
+
+  private async getLastMintedTokenId(): Promise<number> {
+    return this.topPostTokenContract.methods.lastTokenId().call();
+  }
+
+  private async getGasPricesInGWei(): Promise<GasPriceResponse> {
+    return jsonFetcher('https://gasstation-mumbai.matic.today');
   }
 }
