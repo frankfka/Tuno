@@ -7,12 +7,13 @@ import {
   Tooltip,
   Typography,
 } from '@material-ui/core';
-import { format, parseISO } from 'date-fns';
+import { format, formatDuration, intervalToDuration, parseISO } from 'date-fns';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 import React, { useCallback } from 'react';
 import { ApiTallyData } from '../../../types/TallyData';
+import useNextTallyTime from '../../hooks/useNextTallyTime()';
 
 type Props = {
   tallyIndex: number;
@@ -33,11 +34,24 @@ const HomePagePickerBar: React.FC<Props> = ({
 }) => {
   const classes = useStyles();
 
+  const nextTallyTime = useNextTallyTime(60 * 1000);
+
   let headerText = '';
   if (tallyIndex < tallies.length + 1) {
     headerText =
       tallyIndex === 0
-        ? 'Current'
+        ? `Next Tally in ${formatDuration(
+            {
+              ...intervalToDuration({
+                end: nextTallyTime,
+                start: new Date(),
+              }),
+              seconds: 0,
+            },
+            {
+              delimiter: ', ',
+            }
+          )}`
         : format(parseISO(tallies[tallyIndex - 1].tallyTime), 'PP');
   }
 

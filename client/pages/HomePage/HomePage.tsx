@@ -1,5 +1,11 @@
 import { makeStyles, Snackbar } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
+import {
+  formatDistanceToNow,
+  formatDistanceToNowStrict,
+  formatRelative,
+  startOfTomorrow,
+} from 'date-fns';
 import Head from 'next/head';
 import { useCallback, useEffect, useState } from 'react';
 import VoteForPost from '../../../types/VoteForPost';
@@ -8,6 +14,7 @@ import CreatePostDialog from '../../components/CreatePost/CreatePostDialog';
 import CreatePostFab from '../../components/CreatePost/CreatePostFab';
 import LoginDialog from '../../components/Login/LoginDialog';
 import useGlobalState from '../../hooks/useGlobalState';
+import useNextTallyTime from '../../hooks/useNextTallyTime()';
 import usePosts, { UsePostsVariables } from '../../hooks/usePosts';
 import useUser from '../../hooks/useUser';
 import callVoteApi from '../../util/api/callVoteApi';
@@ -139,6 +146,8 @@ export default function HomePage() {
         setIsOpen={setShowLoginDialog}
         onLoginCompleted={onLoginCompleted}
       />
+
+      {/*TODO startoftomorrow in UTC*/}
 
       <HomePostsContent
         setShowLoginDialog={setShowLoginDialog}
