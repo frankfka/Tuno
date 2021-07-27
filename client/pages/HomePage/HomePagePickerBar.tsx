@@ -65,9 +65,13 @@ const HomePagePickerBar: React.FC<Props> = ({
 
       <Grid item>
         <Tooltip title="Jump to current" placement="top">
-          <Button color="primary" onClick={onHeaderDateTextClicked}>
+          <Button
+            color="primary"
+            onClick={onHeaderDateTextClicked}
+            variant="outlined"
+          >
             <Box fontWeight="fontWeightBold">
-              <Typography variant="h6">{headerText}</Typography>
+              <Typography>{headerText}</Typography>
             </Box>
           </Button>
         </Tooltip>

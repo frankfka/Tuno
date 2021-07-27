@@ -28,6 +28,9 @@ export default function HomePage() {
   // User
   const userState = useUser({});
   const { user, swr: userSwr } = userState;
+  const onLoginCompleted = useCallback(() => {
+    userSwr.mutate();
+  }, [userSwr]);
 
   // Posts
   const [usePostsVariables, setUsePostsVariables] = useState<UsePostsVariables>(
@@ -131,7 +134,11 @@ export default function HomePage() {
       </Snackbar>
 
       {/*Login Dialog*/}
-      <LoginDialog isOpen={showLoginDialog} setIsOpen={setShowLoginDialog} />
+      <LoginDialog
+        isOpen={showLoginDialog}
+        setIsOpen={setShowLoginDialog}
+        onLoginCompleted={onLoginCompleted}
+      />
 
       <HomePostsContent
         setShowLoginDialog={setShowLoginDialog}

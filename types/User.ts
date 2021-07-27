@@ -13,7 +13,6 @@ export default interface User {
     username:
   }
 
-  TODO: Eth accounts
    */
   web3?: SafeUserWeb3Account; // Don't expose the full account details
 

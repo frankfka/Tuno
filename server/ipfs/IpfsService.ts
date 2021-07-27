@@ -33,7 +33,6 @@ export default class IpfsServiceImpl implements IpfsService {
     fileName: string,
     metadata: IpfsAwardMetadata
   ): Promise<string> {
-    // TODO this gives without hash prefix
     const uploadedFile = await fleekStorage.upload({
       apiKey: this.fleekCredentials.apiKey,
       apiSecret: this.fleekCredentials.apiSecret,
@@ -41,6 +40,7 @@ export default class IpfsServiceImpl implements IpfsService {
       data: JSON.stringify(metadata),
     });
 
+    // The hash is without the ipfs:// prefix
     return uploadedFile.hash;
   }
 }

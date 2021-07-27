@@ -106,7 +106,6 @@ const getLinkContentInfoFromCid = async (
   };
 };
 
-// TODO: Cors issues? should this be in backend?
 const getLinkContentInfo = async (
   link: string
 ): Promise<LinkContentInfo | undefined> => {
@@ -121,8 +120,9 @@ const getLinkContentInfo = async (
   }
 
   // IPFS hashes
-  if (isIpfsCid(cleanedLink)) {
-    return getLinkContentInfoFromCid(cleanedLink);
+  const possibleCid = cleanedLink.replace('ipfs://', '');
+  if (isIpfsCid(possibleCid)) {
+    return getLinkContentInfoFromCid(possibleCid);
   }
 };
 

@@ -118,7 +118,6 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onCreate }) => {
     if (createResponseJson.data?.id) {
       // Success
       onCreate(createResponseJson.data.id);
-      // TODO: Need to invalidate posts
     } else {
       // TODO: set error
     }
