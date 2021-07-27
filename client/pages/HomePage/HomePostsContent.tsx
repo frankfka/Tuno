@@ -32,6 +32,7 @@ const HomePostsContent: React.FC<Props> = ({ setShowLoginDialog }) => {
   const { globalState } = useGlobalState();
   const { user, swr: userSwr } = useUser({});
 
+  // TODO: When global data resets, need to make sure this index is valid?
   const [usePostsVariables, setUsePostsVariables] = useState<UsePostsVariables>(
     {
       tallyIndex: 0,
@@ -106,19 +107,22 @@ const HomePostsContent: React.FC<Props> = ({ setShowLoginDialog }) => {
       </Card>
       {/*TODO Back to top https://material-ui.com/components/app-bar/#back-to-top*/}
       <div>
-        {/*TODO enable vote click if not logged in, then show dialog*/}
         {postsData?.posts.map((post) => {
+          const currentUserVote = getUserVoteForPost(post.id, user);
+          const numRemainingUserVotes = getUserNumRemainingVotes(
+            user,
+            globalState
+          );
+          // Enable vote buttons if no user so we can show a login dialog
+          const disableVoteButtons = user != null && numRemainingUserVotes < 1;
+
           return (
             <Card key={post.id} className={classes.postItemContainer}>
               <PostItem
                 post={post}
                 onVoteClicked={onVoteClicked}
-                currentUserVote={
-                  user != null ? getUserVoteForPost(post, user) : undefined
-                }
-                userHasMoreVotes={
-                  getUserNumRemainingVotes(user, globalState) > 0
-                }
+                currentUserVote={currentUserVote}
+                disableVoteButtons={disableVoteButtons}
                 showVoteButtons={usePostsVariables.tallyIndex === 0}
               />
             </Card>

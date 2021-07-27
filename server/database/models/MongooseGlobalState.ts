@@ -12,7 +12,7 @@ const GlobalStateSchema = new Schema<MongooseGlobalStateData>(
     tallies: {
       type: [
         {
-          tallyTime: { type: Date, required: true },
+          tallyTime: { type: Schema.Types.Date, required: true },
         },
       ],
       required: true,

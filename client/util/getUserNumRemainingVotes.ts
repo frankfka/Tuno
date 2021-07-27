@@ -1,10 +1,10 @@
-import GlobalState from '../../types/GlobalState';
+import GlobalState, { ApiGlobalState } from '../../types/GlobalState';
 import User from '../../types/User';
 import getLastTallyTime from '../../util/getLastTallyTime';
 
 const getUserNumRemainingVotes = (
   user?: User,
-  globalState?: GlobalState
+  globalState?: ApiGlobalState
 ): number => {
   if (user == null || globalState == null) {
     return 0;

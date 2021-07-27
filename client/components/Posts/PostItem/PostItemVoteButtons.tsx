@@ -8,7 +8,7 @@ export type VoteType = 'up' | 'down';
 type Props = {
   currentVote?: VoteType;
   score: number;
-  canCreateVote: boolean;
+  disableVoteButtons: boolean;
   onVote(vote?: VoteType): void;
 };
 
@@ -16,14 +16,12 @@ const PostItemVoteButtons: React.FC<Props> = ({
   onVote,
   currentVote,
   score,
-  canCreateVote,
+  disableVoteButtons,
 }) => {
-  const disabled = !canCreateVote && currentVote == null;
-
   const onUpvoteClicked = () => {
     if (currentVote === 'up') {
       onVote();
-    } else if (!disabled) {
+    } else if (!disableVoteButtons) {
       onVote('up');
     }
   };
@@ -31,7 +29,7 @@ const PostItemVoteButtons: React.FC<Props> = ({
   const onDownvoteClicked = () => {
     if (currentVote === 'down') {
       onVote();
-    } else if (!disabled) {
+    } else if (!disableVoteButtons) {
       onVote('down');
     }
   };
@@ -45,7 +43,7 @@ const PostItemVoteButtons: React.FC<Props> = ({
     >
       <IconButton
         onClick={onUpvoteClicked}
-        disabled={disabled}
+        disabled={disableVoteButtons}
         color={currentVote === 'up' ? 'secondary' : 'default'}
       >
         <KeyboardArrowUpIcon color="inherit" />
@@ -53,7 +51,7 @@ const PostItemVoteButtons: React.FC<Props> = ({
       <Typography>{score.toFixed(0)}</Typography>
       <IconButton
         onClick={onDownvoteClicked}
-        disabled={disabled}
+        disabled={disableVoteButtons}
         color={currentVote === 'down' ? 'secondary' : 'default'}
       >
         <KeyboardArrowDownIcon color="inherit" />

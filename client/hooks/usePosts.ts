@@ -1,14 +1,14 @@
 import useSWR, { SWRResponse } from 'swr';
 import { Fetcher } from 'swr/dist/types';
-import { GetPostsParams, GetPostsResult } from '../../server/types/GetPosts';
-import EndpointResult from '../../types/EndpointResult';
+import { ApiPostsEndpointResult } from '../../pages/api/posts';
+import { GetPostsApiResult, GetPostsParams } from '../../server/types/GetPosts';
 
 export type UsePostsVariables = {} & GetPostsParams;
 
 type UsePostsState = {
   loading: boolean;
-  swr: SWRResponse<EndpointResult<GetPostsResult>, Error>;
-  postsData?: GetPostsResult;
+  swr: SWRResponse<ApiPostsEndpointResult, Error>;
+  postsData?: GetPostsApiResult;
   error?: Error;
 };
 
@@ -22,7 +22,7 @@ export const getUsePostsSwrKey = (
   variables.minVoteScore,
 ];
 
-const usePostsFetcher: Fetcher<EndpointResult<GetPostsResult>> = async (
+const usePostsFetcher: Fetcher<ApiPostsEndpointResult> = async (
   ...key: UsePostsSwrKeyType
 ) => {
   const [endpoint, tallyIndex, minVoteScore] = key;
@@ -36,11 +36,12 @@ const usePostsFetcher: Fetcher<EndpointResult<GetPostsResult>> = async (
   }
 
   const postsData = await fetch(endpoint + '?' + urlParams);
+
   return postsData.json();
 };
 
 export default function usePosts(variables: UsePostsVariables): UsePostsState {
-  const swr = useSWR<EndpointResult<GetPostsResult>, Error>(
+  const swr = useSWR<ApiPostsEndpointResult, Error>(
     getUsePostsSwrKey(variables),
     usePostsFetcher
   );

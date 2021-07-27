@@ -1,10 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerAppService } from '../../../server/serverAppService';
-import { GetPostsParams, GetPostsResult } from '../../../server/types/GetPosts';
+import {
+  GetPostsApiResult,
+  GetPostsParams,
+  GetPostsResult,
+} from '../../../server/types/GetPosts';
 import EndpointResult from '../../../types/EndpointResult';
-import Result from '../../../types/Result';
+import { ApiGlobalState } from '../../../types/GlobalState';
 import executeAsyncForResult from '../../../util/executeAsyncForResult';
 import resultToEndpointResult from '../../../util/resultToEndpointResult';
+
+export type ApiPostsEndpointResult = EndpointResult<GetPostsApiResult>;
 
 type ValidGetPostsRequest = GetPostsParams;
 

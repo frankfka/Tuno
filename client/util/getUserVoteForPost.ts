@@ -1,12 +1,16 @@
-import Post from '../../types/Post';
+import Post, { ApiPost } from '../../types/Post';
 import User from '../../types/User';
 import VoteForPost from '../../types/VoteForPost';
 
 const getUserVoteForPost = (
-  post: Post,
-  user: User
+  postId: string,
+  user: User | undefined
 ): VoteForPost | undefined => {
-  const userVote = user.votes.find((v) => v.post === post.id);
+  if (user == null) {
+    return;
+  }
+
+  const userVote = user.votes.find((v) => v.post === postId);
 
   if (userVote == null) {
     return;

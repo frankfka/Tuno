@@ -1,10 +1,13 @@
 import PostContent from './PostContent';
 
-type Post = {
+export default interface Post extends PostContent {
   id: string;
   createdAt: Date;
   author: string;
   voteScore: number;
-} & PostContent;
+  awards: string[];
+}
 
-export default Post;
+export type ApiPost = Omit<Post, 'createdAt'> & {
+  createdAt: string;
+};

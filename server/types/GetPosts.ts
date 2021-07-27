@@ -1,4 +1,4 @@
-import Post from '../../types/Post';
+import Post, { ApiPost } from '../../types/Post';
 
 export type GetPostsParams = {
   tallyIndex: number;
@@ -11,4 +11,8 @@ export type GetPostsResult = {
   hasMoreTallies: boolean;
   hasMorePostsForTally: boolean;
   posts: Post[];
+};
+
+export type GetPostsApiResult = Omit<GetPostsResult, 'posts'> & {
+  posts: ApiPost[];
 };

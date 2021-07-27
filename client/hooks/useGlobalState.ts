@@ -1,19 +1,19 @@
 import useSWR, { SWRResponse } from 'swr';
-import EndpointResult from '../../types/EndpointResult';
-import GlobalState from '../../types/GlobalState';
+import { ApiGlobalEndpointResult } from '../../pages/api/global';
+import { ApiGlobalState } from '../../types/GlobalState';
 import jsonFetcher from '../util/jsonFetcher';
 
 type UseGlobalStateDataState = {
   loading: boolean;
-  swr: SWRResponse<EndpointResult<GlobalState>, Error>;
-  globalState?: GlobalState;
+  swr: SWRResponse<ApiGlobalEndpointResult, Error>;
+  globalState?: ApiGlobalState;
   error?: Error;
 };
 
 export const GLOBAL_STATE_SWR_KEY = '/api/global';
 
 export default function useGlobalState(): UseGlobalStateDataState {
-  const swr = useSWR<EndpointResult<GlobalState>, Error>(
+  const swr = useSWR<ApiGlobalEndpointResult, Error>(
     GLOBAL_STATE_SWR_KEY,
     jsonFetcher
   );

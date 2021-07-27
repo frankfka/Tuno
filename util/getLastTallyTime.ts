@@ -1,8 +1,12 @@
-import TallyData from '../types/TallyData';
+import { parseISO } from 'date-fns';
+import TallyData, { ApiTallyData } from '../types/TallyData';
 
-const getLastTallyTime = (tallies: TallyData[]): Date => {
+const getLastTallyTime = (tallies: (TallyData | ApiTallyData)[]): Date => {
   if (tallies.length > 0) {
-    return tallies[0].tallyTime;
+    const lastTallyTime = tallies[0].tallyTime;
+    return typeof lastTallyTime === 'string'
+      ? parseISO(lastTallyTime)
+      : lastTallyTime;
   }
 
   return new Date(2000, 0, 1);

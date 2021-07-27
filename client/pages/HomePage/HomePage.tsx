@@ -1,32 +1,13 @@
-import { Divider, makeStyles, Snackbar } from '@material-ui/core';
+import { makeStyles, Snackbar } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import Head from 'next/head';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import ReactPlayer from 'react-player';
-import { mutate } from 'swr';
-import { GetPostsParams } from '../../../server/types/GetPosts';
-import EndpointResult from '../../../types/EndpointResult';
-import Post from '../../../types/Post';
-import User from '../../../types/User';
-import VoteForPost from '../../../types/VoteForPost';
-import getCidGatewayUrl from '../../../util/getCidGatewayUrl';
+import { useState } from 'react';
 import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
 import CreatePostDialog from '../../components/CreatePost/CreatePostDialog';
 import CreatePostFab from '../../components/CreatePost/CreatePostFab';
 import LoginDialog from '../../components/Login/LoginDialog';
-import ImagePostItemContent from '../../components/Posts/PostItem/ImagePostItemContent';
-import LinkPostItemContent from '../../components/Posts/PostItem/LinkPostItemContent';
-import PostItem from '../../components/Posts/PostItem/PostItem';
-import VideoPostItemContent from '../../components/Posts/PostItem/VideoPostItemContent';
-import useUser, { GET_USER_SWR_KEY } from '../../hooks/useUser';
-import usePosts, { UsePostsVariables } from '../../hooks/usePosts';
-import callVoteApi, {
-  convertVoteForPostToWeight,
-} from '../../util/api/callVoteApi';
-import getUserVoteForPost from '../../util/getUserVoteForPost';
+import useUser from '../../hooks/useUser';
 import HomePostsContent from './HomePostsContent';
-import HomePagePickerBar from './HomePagePickerBar';
 
 const useStyles = makeStyles((theme) => ({}));
 
@@ -51,6 +32,7 @@ export default function HomePage() {
     setShowCreatePostSuccessAlert(false);
 
   const onPostCreate = (postId: string) => {
+    // TODO: Invalidate
     setShowCreatePostDialog(false);
     setShowCreatePostSuccessAlert(true);
   };

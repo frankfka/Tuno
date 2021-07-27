@@ -1,20 +1,23 @@
 import {
   Box,
+  Button,
   Grid,
   IconButton,
   makeStyles,
+  Tooltip,
   Typography,
 } from '@material-ui/core';
+import { format, parseISO } from 'date-fns';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
-import React from 'react';
-import TallyData from '../../../types/TallyData';
+import React, { useCallback } from 'react';
+import { ApiTallyData } from '../../../types/TallyData';
 
 type Props = {
   tallyIndex: number;
   setTallyIndex(v: number): void;
-  tallies: TallyData[];
+  tallies: ApiTallyData[];
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -30,8 +33,17 @@ const HomePagePickerBar: React.FC<Props> = ({
 }) => {
   const classes = useStyles();
 
-  const headerText =
-    tallyIndex === 0 ? 'Current' : tallies[tallyIndex - 1].tallyTime.toString();
+  let headerText = '';
+  if (tallyIndex < tallies.length + 1) {
+    headerText =
+      tallyIndex === 0
+        ? 'Current'
+        : format(parseISO(tallies[tallyIndex - 1].tallyTime), 'PP');
+  }
+
+  const onHeaderDateTextClicked = useCallback(() => {
+    setTallyIndex(0);
+  }, [setTallyIndex]);
 
   return (
     <Grid
@@ -52,9 +64,13 @@ const HomePagePickerBar: React.FC<Props> = ({
       </Grid>
 
       <Grid item>
-        <Box fontWeight="fontWeightBold">
-          <Typography variant="h6">{headerText}</Typography>
-        </Box>
+        <Tooltip title="Jump to current" placement="top">
+          <Button color="primary" onClick={onHeaderDateTextClicked}>
+            <Box fontWeight="fontWeightBold">
+              <Typography variant="h6">{headerText}</Typography>
+            </Box>
+          </Button>
+        </Tooltip>
       </Grid>
 
       <Grid item>

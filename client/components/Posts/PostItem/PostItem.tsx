@@ -1,18 +1,17 @@
 import {
-  Button,
-  ButtonGroup,
+  Box,
+  ButtonBase,
   Grid,
-  IconButton,
   Paper,
+  Tooltip,
   Typography,
 } from '@material-ui/core';
+import StarsIcon from '@material-ui/icons/Stars';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 
 import React from 'react';
-import Post from '../../../../types/Post';
+import { ApiPost } from '../../../../types/Post';
 import getCidGatewayUrl from '../../../../util/getCidGatewayUrl';
 import ImagePostItemContent from './ImagePostItemContent';
 import LinkPostItemContent from './LinkPostItemContent';
@@ -20,9 +19,9 @@ import PostItemVoteButtons, { VoteType } from './PostItemVoteButtons';
 import VideoPostItemContent from './VideoPostItemContent';
 
 type Props = {
-  post: Post;
+  post: ApiPost;
   showVoteButtons: boolean;
-  userHasMoreVotes: boolean;
+  disableVoteButtons: boolean;
   currentUserVote?: VoteType;
   onVoteClicked(postId: string, vote?: VoteType): void;
 };
@@ -36,16 +35,65 @@ const useStyles = makeStyles((theme: Theme) =>
     postTitle: {
       marginBottom: theme.spacing(2),
     },
+    postAwardIcon: {
+      cursor: 'pointer',
+    },
   })
 );
 
-const PostItem: React.FC<Props> = ({
-  post,
-  showVoteButtons,
-  userHasMoreVotes,
-  onVoteClicked,
-  currentUserVote,
-}) => {
+const PostItemVotesSection: React.FC<Props> = (props) => {
+  const classes = useStyles();
+
+  const {
+    post,
+    showVoteButtons,
+    disableVoteButtons,
+    onVoteClicked,
+    currentUserVote,
+  } = props;
+
+  const hasAward = post.awards.length > 0;
+
+  // Vote buttons
+  if (showVoteButtons) {
+    return (
+      <PostItemVoteButtons
+        disableVoteButtons={disableVoteButtons}
+        onVote={(v) => {
+          onVoteClicked(post.id, v);
+        }}
+        score={post.voteScore}
+        currentVote={currentUserVote}
+      />
+    );
+  }
+
+  // TODO: Onclick for nft award info
+  // Past score
+  return (
+    <Box display="flex" flexDirection="column" alignItems="center">
+      {hasAward && (
+        <>
+          <Tooltip title="Click to see award NFT info" placement="top">
+            <ButtonBase disableRipple disableTouchRipple>
+              <Box display="flex" flexDirection="column" alignItems="center">
+                <StarsIcon fontSize="large" color="secondary" />
+                <Typography variant="h6" color="secondary">
+                  Top Post
+                </Typography>
+              </Box>
+            </ButtonBase>
+          </Tooltip>
+        </>
+      )}
+      <Typography variant="caption">Final Score</Typography>
+      <Typography variant="h6">{post.voteScore.toFixed(0)}</Typography>
+    </Box>
+  );
+};
+
+const PostItem: React.FC<Props> = (props) => {
+  const { post } = props;
   const classes = useStyles();
 
   const source =
@@ -67,24 +115,11 @@ const PostItem: React.FC<Props> = ({
     <Paper className={classes.container}>
       <Grid container wrap="nowrap" spacing={4} alignItems="flex-start">
         <Grid item>
-          {showVoteButtons ? (
-            <PostItemVoteButtons
-              canCreateVote={userHasMoreVotes}
-              onVote={(v) => {
-                onVoteClicked(post.id, v);
-              }}
-              score={post.voteScore}
-              currentVote={currentUserVote}
-            />
-          ) : (
-            // TODO: Nicer component
-            <Typography>{post.voteScore.toFixed(0)}</Typography>
-          )}
+          <PostItemVotesSection {...props} />
         </Grid>
         <Grid item xs>
           <Typography variant="caption" className={classes.postTitle}>
-            {/*TODO: Created At*/}
-            {post.createdAt}
+            {formatDistanceToNow(parseISO(post.createdAt), { addSuffix: true })}
           </Typography>
           <Typography variant="h5" className={classes.postTitle}>
             {post.title}
