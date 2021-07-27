@@ -12,7 +12,7 @@ type UseUserVariables = {
   };
 };
 
-type UseUserState = {
+export type UseUserState = {
   loading: boolean;
   swr: SWRResponse<EndpointResult<User>, Error>;
   user?: User;

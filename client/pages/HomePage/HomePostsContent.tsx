@@ -1,10 +1,16 @@
 import { Card, makeStyles } from '@material-ui/core';
-import React, { useCallback, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useState } from 'react';
 import VoteForPost from '../../../types/VoteForPost';
 import PostItem from '../../components/Posts/PostItem/PostItem';
-import useGlobalState from '../../hooks/useGlobalState';
-import useUser from '../../hooks/useUser';
-import usePosts, { UsePostsVariables } from '../../hooks/usePosts';
+import { VoteType } from '../../components/Posts/PostItem/PostItemVoteButtons';
+import useGlobalState, {
+  UseGlobalStateDataState,
+} from '../../hooks/useGlobalState';
+import useUser, { UseUserState } from '../../hooks/useUser';
+import usePosts, {
+  UsePostsState,
+  UsePostsVariables,
+} from '../../hooks/usePosts';
 import callVoteApi from '../../util/api/callVoteApi';
 import getUserNumRemainingVotes from '../../util/getUserNumRemainingVotes';
 import getUserVoteForPost from '../../util/getUserVoteForPost';
@@ -12,6 +18,12 @@ import HomePagePickerBar from './HomePagePickerBar';
 
 type Props = {
   setShowLoginDialog(v: boolean): void;
+  userState: UseUserState;
+  usePostsVariables: UsePostsVariables;
+  setUsePostsVariables: Dispatch<SetStateAction<UsePostsVariables>>;
+  postsState: UsePostsState;
+  globalState: UseGlobalStateDataState;
+  onVoteClicked(postId: string, vote?: VoteType): void;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -26,74 +38,44 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const HomePostsContent: React.FC<Props> = ({ setShowLoginDialog }) => {
+const HomePostsContent: React.FC<Props> = ({
+  // State
+  userState,
+  postsState,
+  globalState,
+
+  // Variables
+  usePostsVariables,
+  setUsePostsVariables,
+
+  // Callbacks
+  setShowLoginDialog,
+  onVoteClicked,
+}) => {
   const classes = useStyles();
 
-  const { globalState } = useGlobalState();
-  const { user, swr: userSwr } = useUser({});
+  // User
+  const { user, swr: userSwr } = userState;
 
-  // TODO: When global data resets, need to make sure this index is valid?
-  const [usePostsVariables, setUsePostsVariables] = useState<UsePostsVariables>(
-    {
-      tallyIndex: 0,
-    }
-  );
-  const setTallyIndex = (newTallyIndex: number) => {
-    setUsePostsVariables((curr) => {
-      return {
-        ...curr,
-        tallyIndex: newTallyIndex,
-      };
-    });
-  };
-
+  // Posts
   const {
     postsData,
     // TODO: loading state
     loading: loadingPosts,
     error: postsError,
     swr: postsSwr,
-  } = usePosts(usePostsVariables);
+  } = postsState;
 
-  const onVoteClicked = useCallback(
-    async (postId: string, vote?: VoteForPost) => {
-      if (user == null) {
-        setShowLoginDialog(true);
-        return;
-      }
-
-      /*
-    TODO: These local updates don't seem to work, try putting wait in `vote.ts` - these update afterwards
-    - Maybe because of async? Updates are called at the very end.
-
-    // Mutate local data for user
-    const voteWeight = convertVoteForPostToWeight(vote);
-    userSwr.mutate((data) => {
-      data?.data?.votes?.push({
-        createdAt: new Date(),
-        post: postId,
-        weight: voteWeight,
+  const setTallyIndex = useCallback(
+    (newTallyIndex: number) => {
+      setUsePostsVariables((curr) => {
+        return {
+          ...curr,
+          tallyIndex: newTallyIndex,
+        };
       });
-      return data;
-    }, false);
-
-    // Mutate local data for post
-    postsSwr.mutate((data) => {
-      const postToVote = data?.data?.posts?.find((p) => p.id === postId);
-      if (postToVote != null) {
-        postToVote.voteScore += voteWeight;
-      }
-      return data;
-    }, false);
-     */
-
-      // Call API
-      await callVoteApi(postId, vote);
-
-      userSwr.mutate();
-      postsSwr.mutate();
     },
-    [postsSwr, setShowLoginDialog, user, userSwr]
+    [setUsePostsVariables]
   );
 
   return (
@@ -102,7 +84,7 @@ const HomePostsContent: React.FC<Props> = ({ setShowLoginDialog }) => {
         <HomePagePickerBar
           tallyIndex={usePostsVariables.tallyIndex}
           setTallyIndex={setTallyIndex}
-          tallies={globalState?.tallies ?? []}
+          tallies={globalState.globalState?.tallies ?? []}
         />
       </Card>
       {/*TODO Back to top https://material-ui.com/components/app-bar/#back-to-top*/}
@@ -111,7 +93,7 @@ const HomePostsContent: React.FC<Props> = ({ setShowLoginDialog }) => {
           const currentUserVote = getUserVoteForPost(post.id, user);
           const numRemainingUserVotes = getUserNumRemainingVotes(
             user,
-            globalState
+            globalState.globalState
           );
           // Enable vote buttons if no user so we can show a login dialog
           const disableVoteButtons = user != null && numRemainingUserVotes < 1;

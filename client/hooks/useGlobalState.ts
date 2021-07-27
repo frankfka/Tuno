@@ -3,7 +3,7 @@ import { ApiGlobalEndpointResult } from '../../pages/api/global';
 import { ApiGlobalState } from '../../types/GlobalState';
 import jsonFetcher from '../util/jsonFetcher';
 
-type UseGlobalStateDataState = {
+export type UseGlobalStateDataState = {
   loading: boolean;
   swr: SWRResponse<ApiGlobalEndpointResult, Error>;
   globalState?: ApiGlobalState;

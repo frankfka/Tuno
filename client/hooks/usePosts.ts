@@ -5,7 +5,7 @@ import { GetPostsApiResult, GetPostsParams } from '../../server/types/GetPosts';
 
 export type UsePostsVariables = {} & GetPostsParams;
 
-type UsePostsState = {
+export type UsePostsState = {
   loading: boolean;
   swr: SWRResponse<ApiPostsEndpointResult, Error>;
   postsData?: GetPostsApiResult;
