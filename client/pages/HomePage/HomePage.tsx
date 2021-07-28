@@ -1,13 +1,6 @@
 import { makeStyles, Snackbar } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
-import {
-  formatDistanceToNow,
-  formatDistanceToNowStrict,
-  formatRelative,
-  startOfTomorrow,
-} from 'date-fns';
-import Head from 'next/head';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import VoteForPost from '../../../types/VoteForPost';
 import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
 import CreatePostDialog from '../../components/CreatePost/CreatePostDialog';

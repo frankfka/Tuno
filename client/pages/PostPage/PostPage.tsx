@@ -87,6 +87,7 @@ export default function PostPage({ post: initialPost }: Props) {
           post={post}
           onVoteClicked={onVoteClicked}
           currentUserVote={currentUserVote}
+          enableTitleLink={false}
           disableVoteButtons={disableVoteButtons}
           showVoteButtons={showVoteButtons}
         />

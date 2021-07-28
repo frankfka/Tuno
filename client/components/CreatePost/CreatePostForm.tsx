@@ -23,8 +23,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const MAX_TITLE_LENGTH = 100;
+
 const validationSchema = yup.object({
-  title: yup.string().required('Please enter a title'),
+  title: yup
+    .string()
+    .required('Please enter a title')
+    .max(MAX_TITLE_LENGTH, 'Title should be under 140 characters'),
   contentLink: yup.string().required('Please enter a link.'),
 });
 
@@ -51,6 +56,9 @@ const CreatePostFormContent = (props: FormikProps<FormValues>) => {
             name="title"
             label="Post Title"
             variant="outlined"
+            helperText={`${
+              MAX_TITLE_LENGTH - props.values.title.length
+            } characters left`}
           />
         </Grid>
 

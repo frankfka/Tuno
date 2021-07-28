@@ -105,6 +105,7 @@ const HomePostsListContent: React.FC<Props> = ({
                 onVoteClicked={onVoteClicked}
                 currentUserVote={currentUserVote}
                 disableVoteButtons={disableVoteButtons}
+                enableTitleLink
                 showVoteButtons={usePostsVariables.tallyIndex === 0}
               />
             </Card>

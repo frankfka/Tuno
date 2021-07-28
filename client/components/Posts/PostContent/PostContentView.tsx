@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {
   Box,
   ButtonBase,
@@ -12,6 +13,7 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 
 import React from 'react';
 import { ApiPost } from '../../../../types/Post';
+import getApiSafeDate from '../../../../util/getApiSafeDate';
 import getCidGatewayUrl from '../../../../util/getCidGatewayUrl';
 import ImagePostContent from './ImagePostContent';
 import LinkPostContent from './LinkPostContent';
@@ -22,19 +24,20 @@ type Props = {
   post: ApiPost;
   showVoteButtons: boolean;
   disableVoteButtons: boolean;
+  enableTitleLink: boolean; // Add link to title to redirect onto post pages
   currentUserVote?: VoteType;
   onVoteClicked(postId: string, vote?: VoteType): void;
 };
 
 // Styles
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles<Theme, Props>((theme: Theme) =>
   createStyles({
     container: {
       padding: theme.spacing(4, 2),
     },
-    postTitle: {
-      marginBottom: theme.spacing(2),
-    },
+    postTitle: (props: Props) => ({
+      cursor: props.enableTitleLink ? 'pointer' : undefined,
+    }),
     postAwardIcon: {
       cursor: 'pointer',
     },
@@ -42,8 +45,6 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const PostItemVotesSection: React.FC<Props> = (props) => {
-  const classes = useStyles();
-
   const {
     post,
     showVoteButtons,
@@ -93,20 +94,41 @@ const PostItemVotesSection: React.FC<Props> = (props) => {
 };
 
 const PostContentView: React.FC<Props> = (props) => {
-  const { post } = props;
-  const classes = useStyles();
+  const { post, enableTitleLink } = props;
+  const classes = useStyles(props);
 
   const source =
     post.source.type === 'ipfs'
       ? getCidGatewayUrl(post.source.value)
       : post.source.value;
 
+  // Content
   let contentElement = <LinkPostContent href={source} />;
 
   if (post.contentType === 'img') {
     contentElement = <ImagePostContent alt="post content" imageSrc={source} />;
   } else if (post.contentType === 'av') {
     contentElement = <VideoPostContent videoSrc={source} />;
+  }
+
+  // Title
+  let titleComponent = (
+    <Typography
+      variant="h5"
+      className={classes.postTitle}
+      display="block"
+      gutterBottom
+    >
+      {post.title}
+    </Typography>
+  );
+
+  if (enableTitleLink) {
+    titleComponent = (
+      <Link href={`/post/${post.id}`} passHref>
+        {titleComponent}
+      </Link>
+    );
   }
 
   return (
@@ -121,12 +143,12 @@ const PostContentView: React.FC<Props> = (props) => {
         <PostItemVotesSection {...props} />
       </Grid>
       <Grid item xs>
-        <Typography variant="caption" className={classes.postTitle}>
-          {formatDistanceToNow(parseISO(post.createdAt), { addSuffix: true })}
+        <Typography variant="caption">
+          {formatDistanceToNow(getApiSafeDate(post.createdAt), {
+            addSuffix: true,
+          })}
         </Typography>
-        <Typography variant="h5" className={classes.postTitle}>
-          {post.title}
-        </Typography>
+        {titleComponent}
         {contentElement}
       </Grid>
     </Grid>
