@@ -1,9 +1,11 @@
 import GlobalState, { ApiGlobalState } from '../../types/GlobalState';
-import User from '../../types/User';
+import User, { ApiUser } from '../../types/User';
+import Vote, { ApiVote } from '../../types/Vote';
+import getApiSafeDate from '../../util/getApiSafeDate';
 import getLastTallyTime from '../../util/getLastTallyTime';
 
 const getUserNumRemainingVotes = (
-  user?: User,
+  user?: ApiUser,
   globalState?: ApiGlobalState
 ): number => {
   if (user == null || globalState == null) {
@@ -11,7 +13,7 @@ const getUserNumRemainingVotes = (
   }
   const lastTallyTime = getLastTallyTime(globalState.tallies);
   const numUserVotesForCurrentTally = user.votes.filter(
-    (v) => v.createdAt > lastTallyTime
+    (v) => getApiSafeDate(v.createdAt) > lastTallyTime
   ).length;
   const diff = globalState.voteLimit - numUserVotesForCurrentTally;
 

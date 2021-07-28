@@ -1,5 +1,5 @@
 import { SafeUserWeb3Account } from './UserWeb3Account';
-import Vote from './Vote';
+import Vote, { ApiVote } from './Vote';
 
 export default interface User {
   id: string;
@@ -17,6 +17,10 @@ export default interface User {
   web3?: SafeUserWeb3Account; // Don't expose the full account details
 
   // Votes
-  lastVotedAt: Date; // Indicates whether we should wipe votes
   votes: Vote[];
 }
+
+export type ApiUser = Omit<User, 'createdAt' | 'votes'> & {
+  createdAt: string;
+  votes: ApiVote[];
+};

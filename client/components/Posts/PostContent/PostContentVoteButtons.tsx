@@ -12,7 +12,7 @@ type Props = {
   onVote(vote?: VoteType): void;
 };
 
-const PostItemVoteButtons: React.FC<Props> = ({
+const PostContentVoteButtons: React.FC<Props> = ({
   onVote,
   currentVote,
   score,
@@ -60,4 +60,4 @@ const PostItemVoteButtons: React.FC<Props> = ({
   );
 };
 
-export default PostItemVoteButtons;
+export default PostContentVoteButtons;

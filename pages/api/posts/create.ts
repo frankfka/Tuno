@@ -4,7 +4,6 @@ import sendUnauthorizedResponse from '../../../server/reqHandlerUtils/sendUnauth
 import { getServerAppService } from '../../../server/serverAppService';
 import { CreatePostResult } from '../../../server/types/CreatePost';
 import EndpointResult from '../../../types/EndpointResult';
-import Post from '../../../types/Post';
 import PostContent from '../../../types/PostContent';
 import executeAsyncForResult from '../../../util/executeAsyncForResult';
 import resultToEndpointResult from '../../../util/resultToEndpointResult';

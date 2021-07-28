@@ -19,6 +19,7 @@ const GlobalStateSchema = new Schema<MongooseGlobalStateData>(
       default: [],
     },
     voteLimit: { type: Schema.Types.Number, required: true },
+    nextTallyTime: { type: Schema.Types.Date, required: true },
   },
   {
     collection: 'globalState',

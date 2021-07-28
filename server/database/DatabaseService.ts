@@ -1,3 +1,4 @@
+import { add, isBefore } from 'date-fns';
 import { FilterQuery, Mongoose } from 'mongoose';
 import { remove } from 'lodash';
 import Award from '../../types/Award';
@@ -27,6 +28,7 @@ export interface DatabaseService {
     content: PostContent,
     authorId: string
   ): Promise<MongoosePostDocument>;
+  getPostById(id: string): Promise<MongoosePostDocument | null>;
   getPosts(
     filterBy?: FilterQuery<MongoosePostDocument>,
     sortBy?: any
@@ -75,6 +77,17 @@ export default class DatabaseServiceImpl implements DatabaseService {
       throw Error('Global state document does not exist');
     }
 
+    // TODO: Mocking next tally time here for now
+    let nextTallyTime = new Date(
+      globalStateDocument.nextTallyTime ?? new Date()
+    );
+    if (isBefore(nextTallyTime, new Date())) {
+      // Update next tally to be a day from the prev
+      nextTallyTime = add(nextTallyTime, { days: 1 });
+      globalStateDocument.nextTallyTime = nextTallyTime;
+      await globalStateDocument.save();
+    }
+
     return globalStateDocument;
   }
 
@@ -103,6 +116,10 @@ export default class DatabaseServiceImpl implements DatabaseService {
         // .populate('author')
         .exec()
     );
+  }
+
+  async getPostById(id: string): Promise<MongoosePostDocument | null> {
+    return MongoosePost.findById(id).exec();
   }
 
   // Adds a vote for the given user and post.

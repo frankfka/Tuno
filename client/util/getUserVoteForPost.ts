@@ -1,10 +1,9 @@
-import Post, { ApiPost } from '../../types/Post';
-import User from '../../types/User';
+import { ApiUser } from '../../types/User';
 import VoteForPost from '../../types/VoteForPost';
 
 const getUserVoteForPost = (
   postId: string,
-  user: User | undefined
+  user: ApiUser | undefined
 ): VoteForPost | undefined => {
   if (user == null) {
     return;

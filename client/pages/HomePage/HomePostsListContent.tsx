@@ -1,8 +1,8 @@
 import { Card, makeStyles } from '@material-ui/core';
 import React, { Dispatch, SetStateAction, useCallback, useState } from 'react';
 import VoteForPost from '../../../types/VoteForPost';
-import PostItem from '../../components/Posts/PostItem/PostItem';
-import { VoteType } from '../../components/Posts/PostItem/PostItemVoteButtons';
+import PostContentView from '../../components/Posts/PostContent/PostContentView';
+import { VoteType } from '../../components/Posts/PostContent/PostContentVoteButtons';
 import useGlobalState, {
   UseGlobalStateDataState,
 } from '../../hooks/useGlobalState';
@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const HomePostsContent: React.FC<Props> = ({
+const HomePostsListContent: React.FC<Props> = ({
   // State
   userState,
   postsState,
@@ -100,7 +100,7 @@ const HomePostsContent: React.FC<Props> = ({
 
           return (
             <Card key={post.id} className={classes.postItemContainer}>
-              <PostItem
+              <PostContentView
                 post={post}
                 onVoteClicked={onVoteClicked}
                 currentUserVote={currentUserVote}
@@ -115,4 +115,4 @@ const HomePostsContent: React.FC<Props> = ({
   );
 };
 
-export default HomePostsContent;
+export default HomePostsListContent;

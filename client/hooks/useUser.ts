@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import Router from 'next/router';
 import useSWR, { mutate, SWRResponse } from 'swr';
-import EndpointResult from '../../types/EndpointResult';
-import User from '../../types/User';
+import { ApiUserEndpointResult } from '../../pages/api/auth/user';
+import { ApiUser } from '../../types/User';
 
 type RedirectPath = string;
 type UseUserVariables = {
@@ -14,8 +14,8 @@ type UseUserVariables = {
 
 export type UseUserState = {
   loading: boolean;
-  swr: SWRResponse<EndpointResult<User>, Error>;
-  user?: User;
+  swr: SWRResponse<ApiUserEndpointResult, Error>;
+  user?: ApiUser;
   error?: Error;
 };
 
@@ -24,7 +24,7 @@ export const GET_USER_SWR_KEY = '/api/auth/user';
 export default function useUser(variables: UseUserVariables): UseUserState {
   const { redirect } = variables;
 
-  const swr = useSWR<EndpointResult<User>>(GET_USER_SWR_KEY);
+  const swr = useSWR<ApiUserEndpointResult>(GET_USER_SWR_KEY);
   const { data, error } = swr;
 
   const user = data?.data;

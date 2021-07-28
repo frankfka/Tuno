@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 const getStartOfTomorrowUTC = (): Date => {
   const startOfTomorrowWithTimeZone = startOfTomorrow();
 
+  let start = new Date();
+  start.setUTCHours(0, 0, 0, 0);
+  console.log(start.toISOString());
+
   return new Date(
     Date.UTC(
       startOfTomorrowWithTimeZone.getFullYear(),
@@ -13,6 +17,7 @@ const getStartOfTomorrowUTC = (): Date => {
   );
 };
 
+// TODO: Consider storing this in the DB as part of global state?
 // Next tally time is start of tomorrow in UTC
 const useNextTallyTime = (refreshIntervalInMs?: number): Date => {
   const [nextTallyTime, setNextTallyTime] = useState(getStartOfTomorrowUTC());

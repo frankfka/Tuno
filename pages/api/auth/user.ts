@@ -3,9 +3,11 @@ import getRequestSession from '../../../server/reqHandlerUtils/getRequestSession
 import sendUnauthorizedResponse from '../../../server/reqHandlerUtils/sendUnauthorizedResponse';
 import { getServerAppService } from '../../../server/serverAppService';
 import EndpointResult from '../../../types/EndpointResult';
-import User from '../../../types/User';
+import User, { ApiUser } from '../../../types/User';
 import executeAsyncForResult from '../../../util/executeAsyncForResult';
 import resultToEndpointResult from '../../../util/resultToEndpointResult';
+
+export type ApiUserEndpointResult = EndpointResult<ApiUser>;
 
 export default async function user(
   req: NextApiRequest,

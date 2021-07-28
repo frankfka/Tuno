@@ -13,10 +13,10 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 import React from 'react';
 import { ApiPost } from '../../../../types/Post';
 import getCidGatewayUrl from '../../../../util/getCidGatewayUrl';
-import ImagePostItemContent from './ImagePostItemContent';
-import LinkPostItemContent from './LinkPostItemContent';
-import PostItemVoteButtons, { VoteType } from './PostItemVoteButtons';
-import VideoPostItemContent from './VideoPostItemContent';
+import ImagePostContent from './ImagePostContent';
+import LinkPostContent from './LinkPostContent';
+import PostContentVoteButtons, { VoteType } from './PostContentVoteButtons';
+import VideoPostContent from './VideoPostContent';
 
 type Props = {
   post: ApiPost;
@@ -57,7 +57,7 @@ const PostItemVotesSection: React.FC<Props> = (props) => {
   // Vote buttons
   if (showVoteButtons) {
     return (
-      <PostItemVoteButtons
+      <PostContentVoteButtons
         disableVoteButtons={disableVoteButtons}
         onVote={(v) => {
           onVoteClicked(post.id, v);
@@ -92,7 +92,7 @@ const PostItemVotesSection: React.FC<Props> = (props) => {
   );
 };
 
-const PostItem: React.FC<Props> = (props) => {
+const PostContentView: React.FC<Props> = (props) => {
   const { post } = props;
   const classes = useStyles();
 
@@ -101,34 +101,36 @@ const PostItem: React.FC<Props> = (props) => {
       ? getCidGatewayUrl(post.source.value)
       : post.source.value;
 
-  let contentElement = <LinkPostItemContent href={source} />;
+  let contentElement = <LinkPostContent href={source} />;
 
   if (post.contentType === 'img') {
-    contentElement = (
-      <ImagePostItemContent alt="post content" imageSrc={source} />
-    );
+    contentElement = <ImagePostContent alt="post content" imageSrc={source} />;
   } else if (post.contentType === 'av') {
-    contentElement = <VideoPostItemContent videoSrc={source} />;
+    contentElement = <VideoPostContent videoSrc={source} />;
   }
 
   return (
-    <Paper className={classes.container}>
-      <Grid container wrap="nowrap" spacing={4} alignItems="flex-start">
-        <Grid item>
-          <PostItemVotesSection {...props} />
-        </Grid>
-        <Grid item xs>
-          <Typography variant="caption" className={classes.postTitle}>
-            {formatDistanceToNow(parseISO(post.createdAt), { addSuffix: true })}
-          </Typography>
-          <Typography variant="h5" className={classes.postTitle}>
-            {post.title}
-          </Typography>
-          {contentElement}
-        </Grid>
+    <Grid
+      container
+      wrap="nowrap"
+      spacing={4}
+      alignItems="flex-start"
+      className={classes.container}
+    >
+      <Grid item>
+        <PostItemVotesSection {...props} />
       </Grid>
-    </Paper>
+      <Grid item xs>
+        <Typography variant="caption" className={classes.postTitle}>
+          {formatDistanceToNow(parseISO(post.createdAt), { addSuffix: true })}
+        </Typography>
+        <Typography variant="h5" className={classes.postTitle}>
+          {post.title}
+        </Typography>
+        {contentElement}
+      </Grid>
+    </Grid>
   );
 };
 
-export default PostItem;
+export default PostContentView;

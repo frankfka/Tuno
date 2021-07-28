@@ -2,6 +2,7 @@ import { format } from 'date-fns';
 
 import Award from '../types/Award';
 import GlobalState from '../types/GlobalState';
+import Post from '../types/Post';
 import TallyData from '../types/TallyData';
 import User from '../types/User';
 import UserWeb3Account from '../types/UserWeb3Account';
@@ -27,6 +28,7 @@ import { MongooseUserData } from './database/models/MongooseUser';
 import IpfsAwardMetadata from './ipfs/IpfsAwardMetadata';
 import IpfsServiceImpl, { IpfsService } from './ipfs/IpfsService';
 import { CreatePostParams, CreatePostResult } from './types/CreatePost';
+import { GetPostParams } from './types/GetPost';
 import { GetPostsParams, GetPostsResult } from './types/GetPosts';
 
 export interface ServerAppService {
@@ -46,6 +48,7 @@ export interface ServerAppService {
   // Posts
   createPost(params: CreatePostParams): Promise<CreatePostResult>;
   getPosts(params: GetPostsParams): Promise<GetPostsResult>;
+  getPostById(params: GetPostParams): Promise<Post | undefined>;
 
   // Auth
   login(authHeader: string): Promise<UserAuthData | undefined>;
@@ -132,6 +135,15 @@ class ServerAppServiceImpl implements ServerAppService {
       hasMoreTallies: tallyIndex === numPastTallies,
       hasMorePostsForTally: false,
     };
+  }
+
+  async getPostById(params: GetPostParams): Promise<Post | undefined> {
+    try {
+      const postDoc = await this.databaseService.getPostById(params.id);
+      return postDoc ? convertPostDocumentToPost(postDoc) : undefined;
+    } catch (err) {
+      console.error('Error getting post by ID: ', params.id, 'Error: ', err);
+    }
   }
 
   /*

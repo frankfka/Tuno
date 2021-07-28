@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const VideoPostItemContent: React.FC<Props> = ({ videoSrc }) => {
+const VideoPostContent: React.FC<Props> = ({ videoSrc }) => {
   const classes = useStyles();
 
   return (
@@ -25,4 +25,4 @@ const VideoPostItemContent: React.FC<Props> = ({ videoSrc }) => {
   );
 };
 
-export default VideoPostItemContent;
+export default VideoPostContent;

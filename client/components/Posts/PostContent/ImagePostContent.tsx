@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const ImagePostItemContent: React.FC<Props> = ({ imageSrc, alt }) => {
+const ImagePostContent: React.FC<Props> = ({ imageSrc, alt }) => {
   const classes = useStyles();
   return (
     <Box display="flex">
@@ -28,4 +28,4 @@ const ImagePostItemContent: React.FC<Props> = ({ imageSrc, alt }) => {
   );
 };
 
-export default ImagePostItemContent;
+export default ImagePostContent;

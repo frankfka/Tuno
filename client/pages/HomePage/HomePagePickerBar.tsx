@@ -11,9 +11,10 @@ import { format, formatDuration, intervalToDuration, parseISO } from 'date-fns';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ApiTallyData } from '../../../types/TallyData';
-import useNextTallyTime from '../../hooks/useNextTallyTime()';
+import getApiSafeDate from '../../../util/getApiSafeDate';
+import useGlobalState from '../../hooks/useGlobalState';
 
 type Props = {
   tallyIndex: number;
@@ -34,24 +35,40 @@ const HomePagePickerBar: React.FC<Props> = ({
 }) => {
   const classes = useStyles();
 
-  const nextTallyTime = useNextTallyTime(60 * 1000);
+  const { globalState } = useGlobalState();
+  const [timeToNextTally, setTimeToNextTally] = useState<Duration>({});
+
+  const updateTimeToNextTally = useCallback(() => {
+    if (globalState?.nextTallyTime) {
+      const nextTally = getApiSafeDate(globalState.nextTallyTime);
+
+      setTimeToNextTally({
+        ...intervalToDuration({
+          end: nextTally,
+          start: new Date(),
+        }),
+        seconds: 0,
+      });
+    }
+  }, [globalState?.nextTallyTime]);
+
+  // Update time to next tally every minute
+  useEffect(() => {
+    updateTimeToNextTally();
+    const interval = setInterval(() => {
+      updateTimeToNextTally();
+    }, 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [globalState?.nextTallyTime, updateTimeToNextTally]);
 
   let headerText = '';
   if (tallyIndex < tallies.length + 1) {
     headerText =
       tallyIndex === 0
-        ? `Next Tally in ${formatDuration(
-            {
-              ...intervalToDuration({
-                end: nextTallyTime,
-                start: new Date(),
-              }),
-              seconds: 0,
-            },
-            {
-              delimiter: ', ',
-            }
-          )}`
+        ? `Next Tally in ${formatDuration(timeToNextTally, {
+            delimiter: ', ',
+          })}`
         : format(parseISO(tallies[tallyIndex - 1].tallyTime), 'PP');
   }
 

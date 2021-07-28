@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const LinkPostItemContent: React.FC<Props> = ({ href }) => {
+const LinkPostContent: React.FC<Props> = ({ href }) => {
   const classes = useStyles();
 
   return (
@@ -37,4 +37,4 @@ const LinkPostItemContent: React.FC<Props> = ({ href }) => {
   );
 };
 
-export default LinkPostItemContent;
+export default LinkPostContent;
