@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import getRequestSession from '../../../server/reqHandlerUtils/getRequestSession';
+import getRequestUser from '../../../server/reqHandlerUtils/getRequestUser';
 import sendUnauthorizedResponse from '../../../server/reqHandlerUtils/sendUnauthorizedResponse';
 import { getServerAppService } from '../../../server/serverAppService';
 import EndpointResult from '../../../types/EndpointResult';
@@ -14,15 +15,9 @@ export default async function user(
   res: NextApiResponse<EndpointResult<User>>
 ) {
   const appService = await getServerAppService();
-  const session = await getRequestSession(req, appService);
-
-  if (session == null) {
-    sendUnauthorizedResponse(res);
-    return;
-  }
 
   const userResult = await executeAsyncForResult(async () => {
-    const user = await appService.getUser(session.authIdentifier);
+    const user = await getRequestUser(req, appService);
     if (user != null) {
       return user;
     }

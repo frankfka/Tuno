@@ -1,9 +1,10 @@
 import { add, isBefore } from 'date-fns';
-import { FilterQuery, Mongoose } from 'mongoose';
+import { FilterQuery, Mongoose, QueryWithHelpers } from 'mongoose';
 import { remove } from 'lodash';
 import Award from '../../types/Award';
 import PostContent from '../../types/PostContent';
 import TallyData from '../../types/TallyData';
+import UserProfile from '../../types/UserProfile';
 import UserWeb3Account from '../../types/UserWeb3Account';
 import { CreateVoteParams } from '../../types/Vote';
 import getLastTallyTime from '../../util/getLastTallyTime';
@@ -15,7 +16,10 @@ import MongooseGlobalState, {
   MongooseGlobalStateDocument,
 } from './models/MongooseGlobalState';
 import MongoosePost, { MongoosePostDocument } from './models/MongoosePost';
-import MongooseUser, { MongooseUserDocument } from './models/MongooseUser';
+import MongooseUser, {
+  MongooseUserData,
+  MongooseUserDocument,
+} from './models/MongooseUser';
 
 export interface DatabaseService {
   init(): Promise<void>;
@@ -45,10 +49,12 @@ export interface DatabaseService {
   createUser(authData: UserAuthData): Promise<MongooseUserDocument>;
   getUserByAuthId(authIdentifier: string): Promise<MongooseUserDocument | null>;
   getUserById(id: string): Promise<MongooseUserDocument | null>;
+  getUserByUsername(username: string): Promise<MongooseUserDocument | null>;
   saveWeb3AccountForUser(
     id: string,
     web3Account: UserWeb3Account
   ): Promise<void>;
+  saveProfileForUser(id: string, newProfile: UserProfile): Promise<void>;
 }
 
 export default class DatabaseServiceImpl implements DatabaseService {
@@ -113,6 +119,7 @@ export default class DatabaseServiceImpl implements DatabaseService {
     return (
       MongoosePost.find(filter || {})
         .sort(sort)
+        .limit(50) // TODO: Enable limits
         // .populate('author')
         .exec()
     );
@@ -239,19 +246,34 @@ export default class DatabaseServiceImpl implements DatabaseService {
   async getUserByAuthId(
     authIdentifier: string
   ): Promise<MongooseUserDocument | null> {
-    return (
-      MongooseUser.findOne({
-        'auth.authIdentifier': authIdentifier,
-      })
-        // Limit to the maximum of today's votes
-        .slice('votes', -this.cachedGlobalStateData.voteLimit)
-        .exec()
-    );
+    const query = MongooseUser.findOne({
+      'auth.authIdentifier': authIdentifier,
+    });
+
+    return this.executeUserQuery(query);
   }
 
   async getUserById(id: string): Promise<MongooseUserDocument | null> {
+    const query = MongooseUser.findById(id);
+
+    return this.executeUserQuery(query);
+  }
+
+  async getUserByUsername(
+    username: string
+  ): Promise<MongooseUserDocument | null> {
+    const query = MongooseUser.findOne({
+      'profile.username': username,
+    });
+
+    return this.executeUserQuery(query);
+  }
+
+  private async executeUserQuery(
+    query: QueryWithHelpers<any, any>
+  ): Promise<MongooseUserDocument | null> {
     return (
-      MongooseUser.findById(id)
+      query
         // Limit to the maximum of today's votes
         .slice('votes', -this.cachedGlobalStateData.voteLimit)
         .exec()
@@ -265,5 +287,17 @@ export default class DatabaseServiceImpl implements DatabaseService {
     await MongooseUser.findByIdAndUpdate(id, {
       web3: web3Account,
     }).exec();
+  }
+
+  async saveProfileForUser(id: string, newProfile: UserProfile): Promise<void> {
+    await MongooseUser.findByIdAndUpdate(
+      id,
+      {
+        profile: newProfile,
+      },
+      {
+        omitUndefined: true, // Delete fields if undefined
+      }
+    ).exec();
   }
 }

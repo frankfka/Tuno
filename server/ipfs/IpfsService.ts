@@ -13,6 +13,7 @@ type FleekCredentials = {
   apiSecret: string;
 };
 
+// TODO: https://docs.web3.storage/how-tos/store/#installing-the-client
 export default class IpfsServiceImpl implements IpfsService {
   private readonly fleekCredentials: FleekCredentials;
 

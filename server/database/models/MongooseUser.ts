@@ -18,10 +18,21 @@ export type MongooseUserDocument = Document<MongooseUserData> &
 const UserSchema = new Schema<MongooseUserData>({
   createdAt: { type: Date, required: true, default: Date.now },
   email: { type: String, required: false },
+  // Auth information
   auth: {
     authIdentifier: { type: String, required: true },
     email: { type: String, required: false },
   },
+  // Profile metadata
+  profile: {
+    type: {
+      username: {
+        type: Schema.Types.String,
+        minLength: 1,
+      },
+    },
+  },
+  // Votes
   votes: {
     type: [
       {

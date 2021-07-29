@@ -19,7 +19,7 @@ export type UseUserState = {
   error?: Error;
 };
 
-export const GET_USER_SWR_KEY = '/api/auth/user';
+export const GET_USER_SWR_KEY = '/api/user';
 
 export default function useUser(variables: UseUserVariables): UseUserState {
   const { redirect } = variables;

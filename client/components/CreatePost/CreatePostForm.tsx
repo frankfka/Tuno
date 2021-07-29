@@ -111,6 +111,7 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onCreate }) => {
       ...linkContentInfo,
     };
 
+    // TODO extract into helper
     const createResponse = await fetch(
       '/api/posts/create',
       createPostFetchInit({

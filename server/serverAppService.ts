@@ -5,6 +5,7 @@ import GlobalState from '../types/GlobalState';
 import Post from '../types/Post';
 import TallyData from '../types/TallyData';
 import User from '../types/User';
+import UserProfile from '../types/UserProfile';
 import UserWeb3Account from '../types/UserWeb3Account';
 import AuthServiceImpl, { AuthService } from './auth/AuthService';
 import UserAuthData from './auth/UserAuthData';
@@ -30,6 +31,12 @@ import IpfsServiceImpl, { IpfsService } from './ipfs/IpfsService';
 import { CreatePostParams, CreatePostResult } from './types/CreatePost';
 import { GetPostParams } from './types/GetPost';
 import { GetPostsParams, GetPostsResult } from './types/GetPosts';
+import {
+  UpdateUserProfileErrorsResult,
+  UpdateUserProfileParams,
+  UpdateUserProfileResult,
+  UserProfileUsernameError,
+} from './types/UpdateUserProfile';
 
 export interface ServerAppService {
   init(): Promise<void>;
@@ -53,7 +60,14 @@ export interface ServerAppService {
   // Auth
   login(authHeader: string): Promise<UserAuthData | undefined>;
   logout(userAuth: UserAuthData): Promise<void>;
+
+  // User
+  updateProfile(
+    params: UpdateUserProfileParams,
+    currentUser: User
+  ): Promise<UpdateUserProfileResult>;
   getUser(authIdentifier: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
 
   // Tally
   tallyTopPost(): Promise<void>;
@@ -173,8 +187,67 @@ class ServerAppServiceImpl implements ServerAppService {
     return this.authService.logout(userAuth);
   }
 
+  async updateProfile(
+    params: UpdateUserProfileParams,
+    currentUser: User
+  ): Promise<UpdateUserProfileResult> {
+    const saveNewProfile = params.save;
+    const validationErrors: UpdateUserProfileErrorsResult = {};
+
+    // Construct new profile with some preprocessing
+    const newUserProfile: UserProfile = {
+      ...params.profile,
+      // Write empty string as undefined to delete the username
+      username: params.profile.username ? params.profile.username : undefined,
+    };
+
+    // Check username
+    if (newUserProfile.username != null) {
+      const userByUsername = await this.getUserByUsername(
+        newUserProfile.username
+      );
+      if (userByUsername != null && userByUsername.id !== currentUser.id) {
+        // Another user exists with this username
+        validationErrors.username = UserProfileUsernameError.ALREADY_EXISTS;
+      }
+    }
+
+    const newProfileIsValid = Object.keys(validationErrors).length === 0;
+
+    let saved = false;
+    let saveError: Error | undefined = undefined;
+    if (newProfileIsValid && saveNewProfile) {
+      try {
+        await this.databaseService.saveProfileForUser(
+          currentUser.id,
+          newUserProfile
+        );
+        saved = true;
+      } catch (err) {
+        console.error('Error saving new profile to DB', err);
+        saveError = err;
+      }
+    }
+
+    return {
+      valid: Object.keys(validationErrors).length === 0,
+      validationErrors,
+      saved,
+      saveError,
+    };
+  }
+
   async getUser(authIdentifier: string): Promise<User | undefined> {
     const dbUser = await this.databaseService.getUserByAuthId(authIdentifier);
+    if (dbUser == null) {
+      return;
+    }
+
+    return convertUserDocumentToUser(dbUser);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const dbUser = await this.databaseService.getUserByUsername(username);
     if (dbUser == null) {
       return;
     }

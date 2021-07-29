@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { Box, Button, Chip, Grid, NoSsr } from '@material-ui/core';
+import { Avatar, Box, Button, Chip, Grid, NoSsr } from '@material-ui/core';
 import React, { useState } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -50,8 +50,9 @@ export default function NavigationBar() {
   const isLoggedIn = user != null;
 
   const profileOrLoginCta = isLoggedIn ? (
-    <IconButton color="inherit">
-      <AccountCircle />
+    <IconButton color="primary" size="small" href="/profile">
+      {/*TODO avatar*/}
+      <Avatar src="" />
     </IconButton>
   ) : (
     <Button
