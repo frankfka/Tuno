@@ -7,7 +7,10 @@ const theme = createTheme({
       main: '#000',
     },
     secondary: {
-      main: deepOrange['A200'],
+      main: deepOrange['A400'],
+    },
+    background: {
+      default: deepOrange['50'],
     },
   },
   typography: {

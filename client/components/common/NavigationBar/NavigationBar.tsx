@@ -15,6 +15,10 @@ import LoginDialog from '../../Login/LoginDialog';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    avatar: {
+      backgroundColor: theme.palette.common.black,
+      color: theme.palette.common.white,
+    },
     root: {
       flexGrow: 1,
     },
@@ -52,7 +56,7 @@ export default function NavigationBar() {
   const profileOrLoginCta = isLoggedIn ? (
     <IconButton color="primary" size="small" href="/profile">
       {/*TODO avatar*/}
-      <Avatar src="" />
+      <Avatar src="" className={classes.avatar} />
     </IconButton>
   ) : (
     <Button
@@ -84,7 +88,7 @@ export default function NavigationBar() {
           <div>
             {showNumRemainingVotes && (
               <Chip
-                color="primary"
+                color="secondary"
                 label={`${numRemainingVotes.toFixed(0)} Vote${
                   numRemainingVotes !== 1 ? 's' : ''
                 } Left`}
