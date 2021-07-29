@@ -31,7 +31,9 @@ export const getPostsFilter = ({
   if (endTime != null) {
     createdAtFilter['$lt'] = endTime;
   }
-  filters.createdAt = createdAtFilter;
+  if (Object.keys(createdAtFilter).length > 0) {
+    filters.createdAt = createdAtFilter;
+  }
 
   return filters;
 };

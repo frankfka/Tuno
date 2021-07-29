@@ -20,11 +20,13 @@ import LinkPostContent from './LinkPostContent';
 import PostContentVoteButtons, { VoteType } from './PostContentVoteButtons';
 import VideoPostContent from './VideoPostContent';
 
+// TODO: Should clean up these props
 type Props = {
   post: ApiPost;
   showVoteButtons: boolean;
   disableVoteButtons: boolean;
   enableTitleLink: boolean; // Add link to title to redirect onto post pages
+  showFullContent: boolean;
   currentUserVote?: VoteType;
   onVoteClicked(postId: string, vote?: VoteType): void;
 };
@@ -88,14 +90,14 @@ const PostItemVotesSection: React.FC<Props> = (props) => {
           </Tooltip>
         </>
       )}
-      <Typography variant="caption">Final Score</Typography>
+      <Typography variant="caption">Votes</Typography>
       <Typography variant="h6">{post.voteScore.toFixed(0)}</Typography>
     </Box>
   );
 };
 
 const PostContentView: React.FC<Props> = (props) => {
-  const { post, enableTitleLink } = props;
+  const { post, enableTitleLink, showFullContent } = props;
   const classes = useStyles(props);
 
   const source =
@@ -150,7 +152,7 @@ const PostContentView: React.FC<Props> = (props) => {
           })}
         </Typography>
         {titleComponent}
-        {contentElement}
+        {showFullContent && contentElement}
       </Grid>
     </Grid>
   );

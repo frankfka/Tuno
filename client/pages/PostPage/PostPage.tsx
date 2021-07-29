@@ -90,6 +90,7 @@ export default function PostPage({ post: initialPost }: Props) {
           enableTitleLink={false}
           disableVoteButtons={disableVoteButtons}
           showVoteButtons={showVoteButtons}
+          showFullContent
         />
       </Card>
     </div>

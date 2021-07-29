@@ -107,6 +107,7 @@ const HomePostsListContent: React.FC<Props> = ({
                   disableVoteButtons && currentUserVote == null
                 }
                 enableTitleLink
+                showFullContent
                 showVoteButtons={usePostsVariables.tallyIndex === 0}
               />
             </Card>

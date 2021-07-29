@@ -50,9 +50,7 @@ export default async function handler(
       return appService.getPostsByAuthor(getPostsByAuthorParams);
     } else {
       const getAllPostsParams = parseGetAllPostsRequest(req.query);
-      const result = await appService.getPosts(getAllPostsParams);
-      console.log(result);
-      return result;
+      return await appService.getPosts(getAllPostsParams);
     }
   });
 
