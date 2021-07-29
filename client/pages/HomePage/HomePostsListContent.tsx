@@ -11,7 +11,6 @@ import usePosts, {
   UsePostsState,
   UsePostsVariables,
 } from '../../hooks/usePosts';
-import callVoteApi from '../../util/api/callVoteApi';
 import getUserNumRemainingVotes from '../../util/getUserNumRemainingVotes';
 import getUserVoteForPost from '../../util/getUserVoteForPost';
 import HomePagePickerBar from './HomePagePickerBar';
@@ -104,7 +103,9 @@ const HomePostsListContent: React.FC<Props> = ({
                 post={post}
                 onVoteClicked={onVoteClicked}
                 currentUserVote={currentUserVote}
-                disableVoteButtons={disableVoteButtons}
+                disableVoteButtons={
+                  disableVoteButtons && currentUserVote == null
+                }
                 enableTitleLink
                 showVoteButtons={usePostsVariables.tallyIndex === 0}
               />

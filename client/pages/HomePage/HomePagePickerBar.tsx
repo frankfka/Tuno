@@ -86,7 +86,7 @@ const HomePagePickerBar: React.FC<Props> = ({
     >
       <Grid item>
         <IconButton
-          color="primary"
+          color="secondary"
           disabled={tallyIndex === 0}
           onClick={() => setTallyIndex(tallyIndex - 1)}
         >
@@ -110,7 +110,7 @@ const HomePagePickerBar: React.FC<Props> = ({
 
       <Grid item>
         <IconButton
-          color="primary"
+          color="secondary"
           disabled={tallyIndex > tallies.length - 1}
           onClick={() => setTallyIndex(tallyIndex + 1)}
         >

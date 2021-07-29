@@ -15,12 +15,15 @@ import LoginDialog from '../../Login/LoginDialog';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    root: {
+      flexGrow: 1,
+    },
+    appBar: {
+      borderRadius: `0 0 ${theme.shape.borderRadius}px ${theme.shape.borderRadius}px`,
+    },
     avatar: {
       backgroundColor: theme.palette.common.black,
       color: theme.palette.common.white,
-    },
-    root: {
-      flexGrow: 1,
     },
     menuButton: {
       marginRight: theme.spacing(2),
@@ -78,7 +81,7 @@ export default function NavigationBar() {
       />
 
       {/*App Bar*/}
-      <AppBar position="fixed" color="default">
+      <AppBar position="fixed" color="default" className={classes.appBar}>
         <Toolbar>
           <Typography variant="h6">Talli</Typography>
 
