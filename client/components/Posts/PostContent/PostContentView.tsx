@@ -44,6 +44,7 @@ const useStyles = makeStyles<Theme, Props>((theme: Theme) =>
   })
 );
 
+// TODO: Add username
 const PostItemVotesSection: React.FC<Props> = (props) => {
   const {
     post,

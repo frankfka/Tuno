@@ -32,6 +32,10 @@ import { CreatePostParams, CreatePostResult } from './types/CreatePost';
 import { GetPostParams } from './types/GetPost';
 import { GetPostsParams, GetPostsResult } from './types/GetPosts';
 import {
+  GetPostsByAuthorParams,
+  GetPostsByAuthorResult,
+} from './types/GetPostsByAuthor';
+import {
   UpdateUserProfileErrorsResult,
   UpdateUserProfileParams,
   UpdateUserProfileResult,
@@ -40,6 +44,7 @@ import {
 
 export interface ServerAppService {
   init(): Promise<void>;
+
   databaseService: DatabaseService;
   authService: AuthService;
   blockchainService: BlockchainService;
@@ -54,11 +59,18 @@ export interface ServerAppService {
 
   // Posts
   createPost(params: CreatePostParams): Promise<CreatePostResult>;
+
   getPosts(params: GetPostsParams): Promise<GetPostsResult>;
+
+  getPostsByAuthor(
+    params: GetPostsByAuthorParams
+  ): Promise<GetPostsByAuthorResult>;
+
   getPostById(params: GetPostParams): Promise<Post | undefined>;
 
   // Auth
   login(authHeader: string): Promise<UserAuthData | undefined>;
+
   logout(userAuth: UserAuthData): Promise<void>;
 
   // User
@@ -66,7 +78,9 @@ export interface ServerAppService {
     params: UpdateUserProfileParams,
     currentUser: User
   ): Promise<UpdateUserProfileResult>;
+
   getUser(authIdentifier: string): Promise<User | undefined>;
+
   getUserByUsername(username: string): Promise<User | undefined>;
 
   // Tally
@@ -110,6 +124,25 @@ class ServerAppServiceImpl implements ServerAppService {
     };
   }
 
+  async getPostsByAuthor(
+    params: GetPostsByAuthorParams
+  ): Promise<GetPostsByAuthorResult> {
+    const { authorId } = params;
+
+    const postDocuments = await this.databaseService.getPosts(
+      getPostsFilter({
+        authorId,
+      }),
+      getPostsSortBy({
+        createdAt: 'desc',
+      })
+    );
+
+    return {
+      posts: postDocuments.map(convertPostDocumentToPost),
+    };
+  }
+
   async getPosts(params: GetPostsParams): Promise<GetPostsResult> {
     const { tallyIndex, minVoteScore } = params;
 
@@ -142,7 +175,8 @@ class ServerAppServiceImpl implements ServerAppService {
         voteScore: tallyIndex > 0 ? 'desc' : undefined, // Sort by score for past tallies
       })
     );
-    const posts = postDocuments.map((doc) => convertPostDocumentToPost(doc));
+
+    const posts = postDocuments.map(convertPostDocumentToPost);
 
     return {
       posts,

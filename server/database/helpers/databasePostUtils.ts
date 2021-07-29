@@ -1,35 +1,39 @@
-/*
-Top Votes
- */
+import { FilterQuery } from 'mongoose';
+import { MongoosePostDocument } from '../models/MongoosePost';
 
 type GetPostsFilterParams = {
+  authorId?: string;
   startTime?: Date; // Inclusive
   endTime?: Date; // Exclusive
   minVoteScore?: number;
 };
 
 export const getPostsFilter = ({
+  authorId,
   startTime,
   endTime,
   minVoteScore,
-}: GetPostsFilterParams): any => {
-  const voteScoreFilter = {
+}: GetPostsFilterParams): FilterQuery<MongoosePostDocument> => {
+  const filters: FilterQuery<MongoosePostDocument> = {};
+
+  if (authorId != null) {
+    filters.author = authorId;
+  }
+
+  filters.voteScore = {
     $gte: minVoteScore == null ? -1 : minVoteScore,
   };
 
   const createdAtFilter: Record<string, Date> = {};
-
   if (startTime != null) {
     createdAtFilter['$gte'] = startTime;
   }
   if (endTime != null) {
     createdAtFilter['$lt'] = endTime;
   }
+  filters.createdAt = createdAtFilter;
 
-  return {
-    voteScore: voteScoreFilter,
-    createdAt: createdAtFilter,
-  };
+  return filters;
 };
 
 type GetPostsSortByParams = {
