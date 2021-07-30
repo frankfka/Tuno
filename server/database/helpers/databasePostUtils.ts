@@ -3,12 +3,14 @@ import { MongoosePostDocument } from '../models/MongoosePost';
 
 type GetPostsFilterParams = {
   authorId?: string;
+  postIds?: string[];
   startTime?: Date; // Inclusive
   endTime?: Date; // Exclusive
   minVoteScore?: number;
 };
 
 export const getPostsFilter = ({
+  postIds,
   authorId,
   startTime,
   endTime,
@@ -16,14 +18,27 @@ export const getPostsFilter = ({
 }: GetPostsFilterParams): FilterQuery<MongoosePostDocument> => {
   const filters: FilterQuery<MongoosePostDocument> = {};
 
+  // Post IDs
+  if (postIds != null) {
+    filters._id = {
+      // @ts-ignore
+      $in: postIds,
+    };
+  }
+
+  // Author
   if (authorId != null) {
     filters.author = authorId;
   }
 
-  filters.voteScore = {
-    $gte: minVoteScore == null ? -1 : minVoteScore,
-  };
+  // Vote score
+  if (minVoteScore != null) {
+    filters.voteScore = {
+      $gte: minVoteScore,
+    };
+  }
 
+  // Created at
   const createdAtFilter: Record<string, Date> = {};
   if (startTime != null) {
     createdAtFilter['$gte'] = startTime;

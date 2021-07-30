@@ -1,9 +1,18 @@
 import useSWR, { SWRResponse } from 'swr';
 import { Fetcher } from 'swr/dist/types';
 import { ApiPostsEndpointResult } from '../../pages/api/posts';
-import { GetPostsApiResult, GetPostsParams } from '../../server/types/GetPosts';
+import {
+  GetPostsApiResult,
+  GetAllPostsParams,
+  GetPostsByAuthorParams,
+  GetPostsByIdParams,
+} from '../../server/types/GetPosts';
 
-export type UsePostsVariables = {} & GetPostsParams;
+export type UsePostsVariables = {
+  getAllPostsParams?: GetAllPostsParams;
+  getPostsByAuthorParams?: GetPostsByAuthorParams;
+  getPostsByIdParams?: GetPostsByIdParams;
+};
 
 export type UsePostsState = {
   loading: boolean;
@@ -12,29 +21,48 @@ export type UsePostsState = {
   error?: Error;
 };
 
-type UsePostsSwrKeyType = ['/api/posts', number, number | undefined];
+// 2nd key is the stringified JSON for URL search params
+type UsePostsSwrKeyType = ['/api/posts', string];
 
 export const getUsePostsSwrKey = (
   variables: UsePostsVariables
-): UsePostsSwrKeyType => [
-  '/api/posts',
-  variables.tallyIndex,
-  variables.minVoteScore,
-];
+): UsePostsSwrKeyType => {
+  let urlParams: Record<string, string | string[]>;
+
+  if (variables.getAllPostsParams != null) {
+    // Handle get all posts
+    const params = variables.getAllPostsParams;
+
+    urlParams = {
+      tallyIndex: params.tallyIndex.toFixed(0),
+    };
+
+    if (params.minVoteScore != null) {
+      urlParams.minVoteScore = params.minVoteScore.toFixed(0);
+    }
+  } else if (variables.getPostsByAuthorParams != null) {
+    // Handle get by author
+    urlParams = {
+      authorId: variables.getPostsByAuthorParams.authorId,
+    };
+  } else if (variables.getPostsByIdParams != null) {
+    // Handle get by ID
+    urlParams = {
+      ids: variables.getPostsByIdParams.ids,
+    };
+  } else {
+    throw Error('Incorrect parameters sent to usePosts');
+  }
+
+  return ['/api/posts', JSON.stringify(urlParams)];
+};
 
 const usePostsFetcher: Fetcher<ApiPostsEndpointResult> = async (
   ...key: UsePostsSwrKeyType
 ) => {
-  const [endpoint, tallyIndex, minVoteScore] = key;
+  const [endpoint, stringifiedUrlSearchParams] = key;
 
-  const urlParams = new URLSearchParams({
-    tallyIndex: tallyIndex.toFixed(0),
-  });
-
-  if (minVoteScore != null) {
-    urlParams.set('minVoteScore', minVoteScore.toFixed(0));
-  }
-
+  const urlParams = new URLSearchParams(JSON.parse(stringifiedUrlSearchParams));
   const postsData = await fetch(endpoint + '?' + urlParams);
 
   return postsData.json();

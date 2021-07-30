@@ -41,14 +41,15 @@ export const getServerSideProps: GetServerSideProps<
   }
 
   const appService = await getServerAppService();
-  const post = await appService.getPostById({ id: postId });
+  const postsData = await appService.getPostsById({ ids: [postId] });
 
-  if (!post) {
+  if (postsData.posts.length === 0) {
     return {
       notFound: true,
     };
   }
 
+  const post = postsData.posts[0];
   const postPropObj: ApiPost = {
     ...cleanServerSideProps(post),
     createdAt: post.createdAt.toISOString(),

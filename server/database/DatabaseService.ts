@@ -32,7 +32,6 @@ export interface DatabaseService {
     content: PostContent,
     authorId: string
   ): Promise<MongoosePostDocument>;
-  getPostById(id: string): Promise<MongoosePostDocument | null>;
   getPosts(
     filterBy?: FilterQuery<MongoosePostDocument>,
     sortBy?: any
@@ -123,10 +122,6 @@ export default class DatabaseServiceImpl implements DatabaseService {
         // .populate('author')
         .exec()
     );
-  }
-
-  async getPostById(id: string): Promise<MongoosePostDocument | null> {
-    return MongoosePost.findById(id).exec();
   }
 
   // Adds a vote for the given user and post.

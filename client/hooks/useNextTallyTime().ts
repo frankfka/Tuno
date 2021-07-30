@@ -6,7 +6,6 @@ const getStartOfTomorrowUTC = (): Date => {
 
   let start = new Date();
   start.setUTCHours(0, 0, 0, 0);
-  console.log(start.toISOString());
 
   return new Date(
     Date.UTC(

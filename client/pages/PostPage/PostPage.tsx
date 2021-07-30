@@ -8,7 +8,7 @@ import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
 import LoginDialog from '../../components/Login/LoginDialog';
 import PostContentView from '../../components/Posts/PostContent/PostContentView';
 import useGlobalState from '../../hooks/useGlobalState';
-import usePost from '../../hooks/usePost';
+import usePosts from '../../hooks/usePosts';
 import useUser from '../../hooks/useUser';
 import callVoteApi from '../../util/api/callVoteApi';
 import getUserNumRemainingVotes from '../../util/getUserNumRemainingVotes';
@@ -30,10 +30,16 @@ export default function PostPage({ post: initialPost }: Props) {
   const { globalState } = useGlobalState();
   const { user, swr: userSwr } = useUser({});
 
-  // Also fetch latest data but use initial server-side props as a fallback
-  const { post: latestPost, swr: postSwr } = usePost({
-    postId: initialPost.id,
+  const { postsData, swr: postsSwr } = usePosts({
+    getPostsByIdParams: {
+      ids: [initialPost.id],
+    },
   });
+  const latestPost: ApiPost | undefined =
+    postsData != null && postsData.posts.length > 0
+      ? postsData.posts[0]
+      : undefined;
+
   const post = latestPost ?? initialPost;
 
   // Login Dialog
@@ -53,7 +59,7 @@ export default function PostPage({ post: initialPost }: Props) {
       // Call API
       await callVoteApi(postId, vote);
 
-      postSwr.mutate();
+      postsSwr.mutate();
       userSwr.mutate();
     },
     [setShowLoginDialog, user, userSwr]

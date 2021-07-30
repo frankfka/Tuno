@@ -1,15 +1,22 @@
 import Post, { ApiPost } from '../../types/Post';
 
-export type GetPostsParams = {
+export type GetAllPostsParams = {
   tallyIndex: number;
   minVoteScore?: number;
   // offset?: number,
   // limit?: number,
 };
 
+export type GetPostsByAuthorParams = {
+  authorId: string;
+};
+
+export type GetPostsByIdParams = {
+  ids: string[];
+};
+
 export type GetPostsResult = {
-  hasMoreTallies: boolean;
-  hasMorePostsForTally: boolean;
+  hasMore: boolean;
   posts: Post[];
 };
 

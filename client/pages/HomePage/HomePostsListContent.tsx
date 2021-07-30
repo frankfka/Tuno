@@ -1,16 +1,13 @@
 import { Card, makeStyles } from '@material-ui/core';
 import React, { Dispatch, SetStateAction, useCallback, useState } from 'react';
-import VoteForPost from '../../../types/VoteForPost';
+import { GetAllPostsParams } from '../../../server/types/GetPosts';
 import PostContentView from '../../components/Posts/PostContent/PostContentView';
 import { VoteType } from '../../components/Posts/PostContent/PostContentVoteButtons';
 import useGlobalState, {
   UseGlobalStateDataState,
 } from '../../hooks/useGlobalState';
+import { UsePostsState, UsePostsVariables } from '../../hooks/usePosts';
 import useUser, { UseUserState } from '../../hooks/useUser';
-import usePosts, {
-  UsePostsState,
-  UsePostsVariables,
-} from '../../hooks/usePosts';
 import getUserNumRemainingVotes from '../../util/getUserNumRemainingVotes';
 import getUserVoteForPost from '../../util/getUserVoteForPost';
 import HomePagePickerBar from './HomePagePickerBar';
@@ -18,8 +15,8 @@ import HomePagePickerBar from './HomePagePickerBar';
 type Props = {
   setShowLoginDialog(v: boolean): void;
   userState: UseUserState;
-  usePostsVariables: UsePostsVariables;
-  setUsePostsVariables: Dispatch<SetStateAction<UsePostsVariables>>;
+  getAllPostsParams: GetAllPostsParams;
+  setGetAllPostsParams: Dispatch<SetStateAction<GetAllPostsParams>>;
   postsState: UsePostsState;
   globalState: UseGlobalStateDataState;
   onVoteClicked(postId: string, vote?: VoteType): void;
@@ -44,8 +41,8 @@ const HomePostsListContent: React.FC<Props> = ({
   globalState,
 
   // Variables
-  usePostsVariables,
-  setUsePostsVariables,
+  getAllPostsParams,
+  setGetAllPostsParams,
 
   // Callbacks
   setShowLoginDialog,
@@ -67,21 +64,21 @@ const HomePostsListContent: React.FC<Props> = ({
 
   const setTallyIndex = useCallback(
     (newTallyIndex: number) => {
-      setUsePostsVariables((curr) => {
+      setGetAllPostsParams((curr) => {
         return {
           ...curr,
           tallyIndex: newTallyIndex,
         };
       });
     },
-    [setUsePostsVariables]
+    [setGetAllPostsParams]
   );
 
   return (
     <div className={classes.contentContainer}>
       <Card className={classes.pagePickerBarContainer}>
         <HomePagePickerBar
-          tallyIndex={usePostsVariables.tallyIndex}
+          tallyIndex={getAllPostsParams.tallyIndex}
           setTallyIndex={setTallyIndex}
           tallies={globalState.globalState?.tallies ?? []}
         />
@@ -108,7 +105,7 @@ const HomePostsListContent: React.FC<Props> = ({
                 }
                 enableTitleLink
                 showFullContent
-                showVoteButtons={usePostsVariables.tallyIndex === 0}
+                showVoteButtons={getAllPostsParams.tallyIndex === 0}
               />
             </Card>
           );

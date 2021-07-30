@@ -1,13 +1,14 @@
 import { makeStyles, Snackbar } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import { useCallback, useState } from 'react';
+import { GetAllPostsParams } from '../../../server/types/GetPosts';
 import VoteForPost from '../../../types/VoteForPost';
 import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
 import CreatePostDialog from '../../components/CreatePost/CreatePostDialog';
 import CreatePostFab from '../../components/CreatePost/CreatePostFab';
 import LoginDialog from '../../components/Login/LoginDialog';
 import useGlobalState from '../../hooks/useGlobalState';
-import usePosts, { UsePostsVariables } from '../../hooks/usePosts';
+import usePosts from '../../hooks/usePosts';
 import useUser from '../../hooks/useUser';
 import callVoteApi from '../../util/api/callVoteApi';
 import HomePostsListContent from './HomePostsListContent';
@@ -32,12 +33,14 @@ export default function HomePage() {
   }, [userSwr]);
 
   // Posts
-  const [usePostsVariables, setUsePostsVariables] = useState<UsePostsVariables>(
+  const [getAllPostsParams, setGetAllPostsParams] = useState<GetAllPostsParams>(
     {
       tallyIndex: 0,
     }
   );
-  const postsState = usePosts(usePostsVariables);
+  const postsState = usePosts({
+    getAllPostsParams: getAllPostsParams,
+  });
   const { swr: postsSwr } = postsState;
   // TODO Reset tally index when globalState tallies changes
 
@@ -136,8 +139,8 @@ export default function HomePage() {
       <HomePostsListContent
         setShowLoginDialog={setShowLoginDialog}
         userState={userState}
-        usePostsVariables={usePostsVariables}
-        setUsePostsVariables={setUsePostsVariables}
+        getAllPostsParams={getAllPostsParams}
+        setGetAllPostsParams={setGetAllPostsParams}
         postsState={postsState}
         globalState={globalState}
         onVoteClicked={onVoteClicked}

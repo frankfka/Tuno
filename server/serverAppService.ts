@@ -24,17 +24,19 @@ import {
   getPostsFilter,
   getPostsSortBy,
 } from './database/helpers/databasePostUtils';
-import { MongoosePostData } from './database/models/MongoosePost';
-import { MongooseUserData } from './database/models/MongooseUser';
+import {
+  MongoosePostData,
+  MongoosePostDocument,
+} from './database/models/MongoosePost';
 import IpfsAwardMetadata from './ipfs/IpfsAwardMetadata';
 import IpfsServiceImpl, { IpfsService } from './ipfs/IpfsService';
 import { CreatePostParams, CreatePostResult } from './types/CreatePost';
-import { GetPostParams } from './types/GetPost';
-import { GetPostsParams, GetPostsResult } from './types/GetPosts';
 import {
+  GetAllPostsParams,
   GetPostsByAuthorParams,
-  GetPostsByAuthorResult,
-} from './types/GetPostsByAuthor';
+  GetPostsByIdParams,
+  GetPostsResult,
+} from './types/GetPosts';
 import {
   UpdateUserProfileErrorsResult,
   UpdateUserProfileParams,
@@ -60,13 +62,11 @@ export interface ServerAppService {
   // Posts
   createPost(params: CreatePostParams): Promise<CreatePostResult>;
 
-  getPosts(params: GetPostsParams): Promise<GetPostsResult>;
+  getAllPosts(params: GetAllPostsParams): Promise<GetPostsResult>;
 
-  getPostsByAuthor(
-    params: GetPostsByAuthorParams
-  ): Promise<GetPostsByAuthorResult>;
+  getPostsByAuthor(params: GetPostsByAuthorParams): Promise<GetPostsResult>;
 
-  getPostById(params: GetPostParams): Promise<Post | undefined>;
+  getPostsById(params: GetPostsByIdParams): Promise<GetPostsResult>;
 
   // Auth
   login(authHeader: string): Promise<UserAuthData | undefined>;
@@ -124,26 +124,7 @@ class ServerAppServiceImpl implements ServerAppService {
     };
   }
 
-  async getPostsByAuthor(
-    params: GetPostsByAuthorParams
-  ): Promise<GetPostsByAuthorResult> {
-    const { authorId } = params;
-
-    const postDocuments = await this.databaseService.getPosts(
-      getPostsFilter({
-        authorId,
-      }),
-      getPostsSortBy({
-        createdAt: 'desc',
-      })
-    );
-
-    return {
-      posts: postDocuments.map(convertPostDocumentToPost),
-    };
-  }
-
-  async getPosts(params: GetPostsParams): Promise<GetPostsResult> {
+  async getAllPosts(params: GetAllPostsParams): Promise<GetPostsResult> {
     const { tallyIndex, minVoteScore } = params;
 
     const globalState = await this.databaseService.getGlobalStateData();
@@ -153,8 +134,7 @@ class ServerAppServiceImpl implements ServerAppService {
     if (tallyIndex < 0 || tallyIndex > numPastTallies) {
       return {
         posts: [],
-        hasMoreTallies: false,
-        hasMorePostsForTally: false,
+        hasMore: false,
       };
     }
 
@@ -176,22 +156,45 @@ class ServerAppServiceImpl implements ServerAppService {
       })
     );
 
-    const posts = postDocuments.map(convertPostDocumentToPost);
-
-    return {
-      posts,
-      hasMoreTallies: tallyIndex === numPastTallies,
-      hasMorePostsForTally: false,
-    };
+    return this.createGetPostsResult(postDocuments);
   }
 
-  async getPostById(params: GetPostParams): Promise<Post | undefined> {
-    try {
-      const postDoc = await this.databaseService.getPostById(params.id);
-      return postDoc ? convertPostDocumentToPost(postDoc) : undefined;
-    } catch (err) {
-      console.error('Error getting post by ID: ', params.id, 'Error: ', err);
-    }
+  async getPostsByAuthor(
+    params: GetPostsByAuthorParams
+  ): Promise<GetPostsResult> {
+    const { authorId } = params;
+
+    const postDocuments = await this.databaseService.getPosts(
+      getPostsFilter({
+        authorId,
+      }),
+      getPostsSortBy({
+        createdAt: 'desc',
+      })
+    );
+
+    return this.createGetPostsResult(postDocuments);
+  }
+
+  async getPostsById(params: GetPostsByIdParams): Promise<GetPostsResult> {
+    // TODO: Need to enforce order?
+    const postDocuments = await this.databaseService.getPosts(
+      getPostsFilter({
+        postIds: params.ids,
+      })
+    );
+
+    return this.createGetPostsResult(postDocuments);
+  }
+
+  private createGetPostsResult(
+    postDocuments: MongoosePostDocument[],
+    hasMore: boolean = false
+  ): GetPostsResult {
+    return {
+      posts: postDocuments.map(convertPostDocumentToPost),
+      hasMore,
+    };
   }
 
   /*
