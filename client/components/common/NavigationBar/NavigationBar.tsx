@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 import { Avatar, Box, Button, Chip, Grid, NoSsr } from '@material-ui/core';
 import React, { useState } from 'react';
@@ -12,6 +13,8 @@ import useGlobalState from '../../../hooks/useGlobalState';
 import useUser from '../../../hooks/useUser';
 import getUserNumRemainingVotes from '../../../util/getUserNumRemainingVotes';
 import LoginDialog from '../../Login/LoginDialog';
+
+import logo from '../../../../public/tuno.svg';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -71,6 +74,8 @@ export default function NavigationBar() {
     </Button>
   );
 
+  // @ts-ignore
+  // @ts-ignore
   return (
     <div className={classes.root}>
       {/*Login Dialog*/}
@@ -83,7 +88,13 @@ export default function NavigationBar() {
       {/*App Bar*/}
       <AppBar position="fixed" color="default" className={classes.appBar}>
         <Toolbar>
-          <Typography variant="h6">Talli</Typography>
+          <Box>
+            <Link href="/">
+              <a>
+                <Image src={logo} height={36} width={84} />
+              </a>
+            </Link>
+          </Box>
 
           <Box flexGrow={1} />
 
