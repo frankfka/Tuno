@@ -12,6 +12,7 @@ import { Form, Formik, FormikProps } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
 import React, { useCallback, useState } from 'react';
 import { SWRResponse } from 'swr';
+import { ApiUserEndpointResult } from '../../../../pages/api/user';
 import User, { ApiUser } from '../../../../types/User';
 import callUserProfileUpdateApi from '../../../util/api/callUserProfileUpdateApi';
 import GeneralSectionFormContent from './GeneralSectionFormContent';
@@ -22,7 +23,7 @@ import {
 
 type Props = {
   user: ApiUser;
-  userSwr: SWRResponse<ApiUser, Error>;
+  userSwr: SWRResponse<ApiUserEndpointResult, Error>;
 };
 
 const useStyles = makeStyles((theme: Theme) => ({

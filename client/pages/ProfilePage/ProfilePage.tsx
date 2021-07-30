@@ -1,11 +1,12 @@
-import { makeStyles, Paper, Tab, Tabs } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
+import { makeStyles } from '@material-ui/core';
+import React, { useState } from 'react';
 import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
 import useUser from '../../hooks/useUser';
+import GeneralSection from './GeneralSection/GeneralSection';
 import PostsSection from './PostsSection/PostsSection';
 import ProfilePageTabName from './ProfilePageTabName';
 import ProfilePageTabSelect from './ProfilePageTabSelect';
-import GeneralSection from './GeneralSection/GeneralSection';
+import VotesSection from './VotesSection/VotesSection';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -40,6 +41,9 @@ const ProfilePage = () => {
         break;
       case ProfilePageTabName.Posts:
         tabContent = <PostsSection user={user} />;
+        break;
+      case ProfilePageTabName.Votes:
+        tabContent = <VotesSection user={user} />;
         break;
     }
   }

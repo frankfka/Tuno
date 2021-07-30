@@ -36,7 +36,10 @@ type Props = {
 const useStyles = makeStyles<Theme, Props>((theme: Theme) =>
   createStyles({
     container: {
-      padding: theme.spacing(4, 2),
+      padding: theme.spacing(4, 4),
+    },
+    voteCountContainer: {
+      minWidth: '5vw',
     },
     postTitle: (props: Props) => ({
       cursor: props.enableTitleLink ? 'pointer' : undefined,
@@ -49,6 +52,8 @@ const useStyles = makeStyles<Theme, Props>((theme: Theme) =>
 
 // TODO: Add username
 const PostItemVotesSection: React.FC<Props> = (props) => {
+  const classes = useStyles(props);
+
   const {
     post,
     showVoteButtons,
@@ -83,7 +88,12 @@ const PostItemVotesSection: React.FC<Props> = (props) => {
 
   // Past score
   return (
-    <Box display="flex" flexDirection="column" alignItems="center">
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      className={classes.voteCountContainer}
+    >
       {hasAward && (
         <>
           <Tooltip title="Click to see award NFT info" placement="top">

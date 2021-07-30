@@ -28,7 +28,7 @@ const parseGetByIdsRequest = (
 ): GetPostsByIdParams | undefined => {
   return queryParams.ids != null
     ? {
-        ids: queryParams.ids,
+        ids: queryParams.ids.split(','),
       }
     : undefined;
 };

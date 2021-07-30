@@ -79,7 +79,8 @@ export default function PostPage({ post: initialPost }: Props) {
     getApiSafeDate(post.createdAt) >
     getLastTallyTime(globalState?.tallies ?? []);
   // Enable vote buttons if no user so we can show a login dialog
-  const disableVoteButtons = user != null && numRemainingUserVotes < 1;
+  const disableVoteButtons =
+    user != null && numRemainingUserVotes < 1 && currentUserVote == null;
 
   return (
     <div>
