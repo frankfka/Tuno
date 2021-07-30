@@ -23,14 +23,14 @@ const useStyles = makeStyles((theme: Theme) =>
 
 type LoginDialogProps = {
   isOpen: boolean;
-  setIsOpen: (v: boolean) => void;
+  closeDialog(): void;
   onLoginCompleted?: () => void;
 };
 
 // Main component
 const LoginDialog = ({
   isOpen,
-  setIsOpen,
+  closeDialog,
   onLoginCompleted,
 }: LoginDialogProps) => {
   const styles = useStyles();
@@ -40,15 +40,11 @@ const LoginDialog = ({
   const [attemptingLogin, setAttemptingLogin] = useState(false);
   const [email, setEmail] = useState('');
 
-  function closeDialog() {
-    setIsOpen(false);
-  }
-
   async function onLoginSuccess() {
     // TODO: future onboarding workflow
     setAttemptingLogin(false);
     onLoginCompleted?.();
-    setIsOpen(false);
+    closeDialog();
   }
 
   async function onLoginFailure(error: Error) {

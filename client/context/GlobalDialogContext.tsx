@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { ApiAward } from '../../types/Award';
-import LoginDialog from '../components/Login/LoginDialog';
+import AwardInfoDialog from '../components/AwardInfoDialog/AwardInfoDialog';
+import LoginDialog from '../components/LoginDialog/LoginDialog';
 
 const emptyFn = () => {};
 
@@ -8,12 +9,16 @@ type LoginDialogData = {
   onLoginCompleted?(): void;
 };
 
+type AwardInfoDialogData = {
+  id: string;
+};
+
 type DialogContextState = {
   loginDialogData?: LoginDialogData;
-  awardInfoDialogData?: ApiAward;
+  awardInfoDialogData?: AwardInfoDialogData;
   // Exposed methods
-  setLoginDialogData(data: LoginDialogData): void;
-  setAwardInfoDialogData(award?: ApiAward): void;
+  setLoginDialogData(data?: LoginDialogData): void;
+  setAwardInfoDialogData(data?: AwardInfoDialogData): void;
 };
 
 export const DialogContext = createContext<DialogContextState>({
@@ -23,7 +28,8 @@ export const DialogContext = createContext<DialogContextState>({
 
 export const DialogContextProvider: React.FC = ({ children }) => {
   const [loginDialogData, setLoginDialogData] = useState<LoginDialogData>();
-  const [awardInfoDialogData, setAwardInfoDialogData] = useState<ApiAward>();
+  const [awardInfoDialogData, setAwardInfoDialogData] =
+    useState<AwardInfoDialogData>();
 
   const dialogContextState: DialogContextState = {
     loginDialogData,
@@ -37,10 +43,16 @@ export const DialogContextProvider: React.FC = ({ children }) => {
       {/*Login Dialog*/}
       <LoginDialog
         isOpen={loginDialogData != null}
-        setIsOpen={() => setLoginDialogData(undefined)}
+        closeDialog={() => setLoginDialogData(undefined)}
         onLoginCompleted={loginDialogData?.onLoginCompleted}
       />
 
+      {/*Award Dialog*/}
+      <AwardInfoDialog
+        awardId={awardInfoDialogData?.id ?? ''}
+        isOpen={awardInfoDialogData != null}
+        closeDialog={() => setAwardInfoDialogData(undefined)}
+      />
       {children}
     </DialogContext.Provider>
   );

@@ -11,10 +11,11 @@ import StarsIcon from '@material-ui/icons/Stars';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ApiPost } from '../../../../types/Post';
+import { getCidGatewayUrl } from '../../../../util/cidUtils';
 import getApiSafeDate from '../../../../util/getApiSafeDate';
-import getCidGatewayUrl from '../../../../util/getCidGatewayUrl';
+import useGlobalDialog from '../../../hooks/useGlobalDialog';
 import ImagePostContent from './ImagePostContent';
 import LinkPostContent from './LinkPostContent';
 import PostContentVoteButtons, { VoteType } from './PostContentVoteButtons';
@@ -56,7 +57,15 @@ const PostItemVotesSection: React.FC<Props> = (props) => {
     currentUserVote,
   } = props;
 
+  const globalDialogContext = useGlobalDialog();
   const hasAward = post.awards.length > 0;
+
+  const showAwardInfoDialog = useCallback(() => {
+    hasAward &&
+      globalDialogContext.setAwardInfoDialogData({
+        id: post.awards[0],
+      });
+  }, [globalDialogContext.setAwardInfoDialogData, hasAward]);
 
   // Vote buttons
   if (showVoteButtons) {
@@ -72,16 +81,21 @@ const PostItemVotesSection: React.FC<Props> = (props) => {
     );
   }
 
-  // TODO: Onclick for nft award info
   // Past score
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
       {hasAward && (
         <>
           <Tooltip title="Click to see award NFT info" placement="top">
-            <ButtonBase disableRipple disableTouchRipple>
+            <ButtonBase
+              disableRipple
+              disableTouchRipple
+              onClick={showAwardInfoDialog}
+            >
               <Box display="flex" flexDirection="column" alignItems="center">
-                <StarsIcon fontSize="large" color="secondary" />
+                <Typography variant="h4" color="secondary">
+                  🏆
+                </Typography>
                 <Typography variant="h6" color="secondary">
                   Top Post
                 </Typography>

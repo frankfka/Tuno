@@ -1,6 +1,11 @@
 import { omit } from 'lodash';
+import Award from '../../types/Award';
 import Post from '../../types/Post';
 import User from '../../types/User';
+import {
+  MongooseAwardData,
+  MongooseAwardDocument,
+} from './models/MongooseAward';
 import { MongoosePostData, MongoosePostDocument } from './models/MongoosePost';
 import { MongooseUserData, MongooseUserDocument } from './models/MongooseUser';
 
@@ -24,5 +29,16 @@ export const convertUserDocumentToUser = (
   return {
     ...documentObj,
     id: userDocument.id,
+  };
+};
+
+export const convertAwardDocumentToAward = (
+  awardDocument: MongooseAwardDocument
+): Award => {
+  const documentObj = awardDocument.toObject<MongooseAwardData>();
+
+  return {
+    ...documentObj,
+    id: awardDocument.id,
   };
 };

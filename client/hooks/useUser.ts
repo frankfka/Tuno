@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import Router from 'next/router';
 import useSWR, { mutate, SWRResponse } from 'swr';
-import { ApiUserEndpointResult } from '../../pages/api/auth/user';
+import { ApiUserEndpointResult } from '../../pages/api/user';
 import { ApiUser } from '../../types/User';
 
 type RedirectPath = string;

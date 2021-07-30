@@ -2,11 +2,9 @@ import { format } from 'date-fns';
 
 import Award from '../types/Award';
 import GlobalState from '../types/GlobalState';
-import Post from '../types/Post';
 import TallyData from '../types/TallyData';
 import User from '../types/User';
 import UserProfile from '../types/UserProfile';
-import UserWeb3Account from '../types/UserWeb3Account';
 import AuthServiceImpl, { AuthService } from './auth/AuthService';
 import UserAuthData from './auth/UserAuthData';
 import {
@@ -14,6 +12,7 @@ import {
   BlockchainServiceImpl,
 } from './blockchain/BlockchainService';
 import {
+  convertAwardDocumentToAward,
   convertPostDocumentToPost,
   convertUserDocumentToUser,
 } from './database/converters';
@@ -31,6 +30,7 @@ import {
 import IpfsAwardMetadata from './ipfs/IpfsAwardMetadata';
 import IpfsServiceImpl, { IpfsService } from './ipfs/IpfsService';
 import { CreatePostParams, CreatePostResult } from './types/CreatePost';
+import { GetAwardParams, GetAwardResult } from './types/GetAward';
 import {
   GetAllPostsParams,
   GetPostsByAuthorParams,
@@ -58,6 +58,9 @@ export interface ServerAppService {
 
   // Globals
   getGlobalState(): Promise<GlobalState>;
+
+  // Awards
+  getAward(params: GetAwardParams): Promise<GetAwardResult>;
 
   // Posts
   createPost(params: CreatePostParams): Promise<CreatePostResult>;
@@ -87,6 +90,7 @@ export interface ServerAppService {
   tallyTopPost(): Promise<void>;
 }
 
+// TODO: Make this a thin wrapper for services, then extract handlers
 class ServerAppServiceImpl implements ServerAppService {
   /*
   Initialization
@@ -111,6 +115,17 @@ class ServerAppServiceImpl implements ServerAppService {
    */
   async getGlobalState(): Promise<GlobalState> {
     return this.databaseService.getGlobalStateData();
+  }
+
+  /*
+  Awards
+   */
+  async getAward(params: GetAwardParams): Promise<GetAwardResult> {
+    const award = await this.databaseService.getAward(params.id);
+
+    return {
+      award: award != null ? convertAwardDocumentToAward(award) : undefined,
+    };
   }
 
   /*

@@ -5,7 +5,7 @@ import VoteForPost from '../../../types/VoteForPost';
 import getApiSafeDate from '../../../util/getApiSafeDate';
 import getLastTallyTime from '../../../util/getLastTallyTime';
 import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
-import LoginDialog from '../../components/Login/LoginDialog';
+import LoginDialog from '../../components/LoginDialog/LoginDialog';
 import PostContentView from '../../components/Posts/PostContent/PostContentView';
 import useGlobalDialog from '../../hooks/useGlobalDialog';
 import useGlobalState from '../../hooks/useGlobalState';

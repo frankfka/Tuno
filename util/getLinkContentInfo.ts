@@ -4,7 +4,7 @@ import ReactPlayer from 'react-player';
 import PostContent from '../types/PostContent';
 import PostContentSource from '../types/PostContentSource';
 import PostContentType from '../types/PostContentType';
-import getCidGatewayUrl from './getCidGatewayUrl';
+import {getCidGatewayUrl} from "./cidUtils";
 
 export type LinkContentInfo = Omit<PostContent, 'title'>;
 

@@ -6,7 +6,7 @@ import VoteForPost from '../../../types/VoteForPost';
 import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
 import CreatePostDialog from '../../components/CreatePost/CreatePostDialog';
 import CreatePostFab from '../../components/CreatePost/CreatePostFab';
-import LoginDialog from '../../components/Login/LoginDialog';
+import LoginDialog from '../../components/LoginDialog/LoginDialog';
 import useGlobalDialog from '../../hooks/useGlobalDialog';
 import useGlobalState from '../../hooks/useGlobalState';
 import usePosts from '../../hooks/usePosts';

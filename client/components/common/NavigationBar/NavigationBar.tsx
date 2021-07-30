@@ -13,7 +13,7 @@ import useGlobalDialog from '../../../hooks/useGlobalDialog';
 import useGlobalState from '../../../hooks/useGlobalState';
 import useUser from '../../../hooks/useUser';
 import getUserNumRemainingVotes from '../../../util/getUserNumRemainingVotes';
-import LoginDialog from '../../Login/LoginDialog';
+import LoginDialog from '../../LoginDialog/LoginDialog';
 
 import logo from '../../../../public/tuno.svg';
 
