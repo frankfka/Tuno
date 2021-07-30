@@ -13,7 +13,6 @@ import getUserVoteForPost from '../../util/getUserVoteForPost';
 import HomePagePickerBar from './HomePagePickerBar';
 
 type Props = {
-  setShowLoginDialog(v: boolean): void;
   userState: UseUserState;
   getAllPostsParams: GetAllPostsParams;
   setGetAllPostsParams: Dispatch<SetStateAction<GetAllPostsParams>>;
@@ -45,7 +44,6 @@ const HomePostsListContent: React.FC<Props> = ({
   setGetAllPostsParams,
 
   // Callbacks
-  setShowLoginDialog,
   onVoteClicked,
 }) => {
   const classes = useStyles();

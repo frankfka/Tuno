@@ -9,6 +9,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import AccountCircle from '@material-ui/icons/AccountCircle';
+import useGlobalDialog from '../../../hooks/useGlobalDialog';
 import useGlobalState from '../../../hooks/useGlobalState';
 import useUser from '../../../hooks/useUser';
 import getUserNumRemainingVotes from '../../../util/getUserNumRemainingVotes';
@@ -46,7 +47,7 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function NavigationBar() {
   const classes = useStyles();
 
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const globalDialogContext = useGlobalDialog();
   const { user, loading: loadingUser, swr: userSwr } = useUser({});
   const { globalState } = useGlobalState();
 
@@ -55,6 +56,9 @@ export default function NavigationBar() {
 
   const onLoginCompleted = () => {
     userSwr.mutate();
+  };
+  const onLoginClicked = () => {
+    globalDialogContext.setLoginDialogData({ onLoginCompleted });
   };
 
   const isLoggedIn = user != null;
@@ -65,26 +69,14 @@ export default function NavigationBar() {
       <Avatar src="" className={classes.avatar} />
     </IconButton>
   ) : (
-    <Button
-      variant="contained"
-      color="primary"
-      onClick={() => setShowLoginDialog(true)}
-    >
+    <Button variant="contained" color="primary" onClick={onLoginClicked}>
       Log In
     </Button>
   );
 
-  // @ts-ignore
-  // @ts-ignore
+  // TODO: Finish removing login dialog
   return (
     <div className={classes.root}>
-      {/*Login Dialog*/}
-      <LoginDialog
-        isOpen={showLoginDialog}
-        setIsOpen={setShowLoginDialog}
-        onLoginCompleted={onLoginCompleted}
-      />
-
       {/*App Bar*/}
       <AppBar position="fixed" color="default" className={classes.appBar}>
         <Toolbar>

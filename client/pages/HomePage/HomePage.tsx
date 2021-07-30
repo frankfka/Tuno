@@ -7,6 +7,7 @@ import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
 import CreatePostDialog from '../../components/CreatePost/CreatePostDialog';
 import CreatePostFab from '../../components/CreatePost/CreatePostFab';
 import LoginDialog from '../../components/Login/LoginDialog';
+import useGlobalDialog from '../../hooks/useGlobalDialog';
 import useGlobalState from '../../hooks/useGlobalState';
 import usePosts from '../../hooks/usePosts';
 import useUser from '../../hooks/useUser';
@@ -19,8 +20,8 @@ export default function HomePage() {
   const classes = useStyles();
 
   // Dialogs
+  const globalDialogContext = useGlobalDialog();
   const [showCreatePostDialog, setShowCreatePostDialog] = useState(false);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   // Global state
   const globalState = useGlobalState();
@@ -48,7 +49,7 @@ export default function HomePage() {
   const onVoteClicked = useCallback(
     async (postId: string, vote?: VoteForPost) => {
       if (user == null) {
-        setShowLoginDialog(true);
+        globalDialogContext.setLoginDialogData({ onLoginCompleted });
         return;
       }
 
@@ -83,12 +84,14 @@ export default function HomePage() {
       userSwr.mutate();
       postsSwr.mutate();
     },
-    [postsSwr, setShowLoginDialog, user, userSwr]
+    [postsSwr, globalDialogContext.setLoginDialogData, user, userSwr]
   );
 
   // Create post
   const onCreatePostFabClicked = () => {
-    user ? setShowCreatePostDialog(true) : setShowLoginDialog(true);
+    user
+      ? setShowCreatePostDialog(true)
+      : globalDialogContext.setLoginDialogData({ onLoginCompleted });
   };
 
   const [showCreatePostSuccessAlert, setShowCreatePostSuccessAlert] =
@@ -129,15 +132,7 @@ export default function HomePage() {
         </Alert>
       </Snackbar>
 
-      {/*Login Dialog*/}
-      <LoginDialog
-        isOpen={showLoginDialog}
-        setIsOpen={setShowLoginDialog}
-        onLoginCompleted={onLoginCompleted}
-      />
-
       <HomePostsListContent
-        setShowLoginDialog={setShowLoginDialog}
         userState={userState}
         getAllPostsParams={getAllPostsParams}
         setGetAllPostsParams={setGetAllPostsParams}

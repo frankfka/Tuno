@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-type AlertType = 'success' | 'error'; // TODO: Generalize snackbar into wrapper component
+type AlertType = 'success' | 'error'; // TODO: Generalize snackbar into hook, using https://github.com/iamhosseindhv/notistack
 
 const GeneralSection: React.FC<Props> = ({ user, userSwr }) => {
   const classes = useStyles();

@@ -9,3 +9,7 @@ export default interface IpfsAwardMetadata {
   postSource: string;
   createdAt: Date;
 }
+
+export type ApiIpfsAwardMetadata = Omit<IpfsAwardMetadata, 'createdAt'> & {
+  createdAt: string;
+};

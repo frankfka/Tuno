@@ -1,6 +1,7 @@
 import { CssBaseline, MuiThemeProvider } from '@material-ui/core';
 import type { AppProps } from 'next/app';
 import { useEffect } from 'react';
+import { DialogContextProvider } from '../client/context/GlobalDialogContext';
 import theme from '../client/theme/theme';
 import { SWRConfig } from 'swr';
 import jsonFetcher from '../client/util/jsonFetcher';
@@ -15,7 +16,9 @@ function App({ Component, pageProps }: AppProps) {
       >
         <MuiThemeProvider theme={theme}>
           <CssBaseline />
-          <Component {...pageProps} />
+          <DialogContextProvider>
+            <Component {...pageProps} />
+          </DialogContextProvider>
         </MuiThemeProvider>
       </SWRConfig>
     </>

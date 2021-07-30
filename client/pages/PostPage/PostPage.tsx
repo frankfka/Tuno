@@ -7,6 +7,7 @@ import getLastTallyTime from '../../../util/getLastTallyTime';
 import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
 import LoginDialog from '../../components/Login/LoginDialog';
 import PostContentView from '../../components/Posts/PostContent/PostContentView';
+import useGlobalDialog from '../../hooks/useGlobalDialog';
 import useGlobalState from '../../hooks/useGlobalState';
 import usePosts from '../../hooks/usePosts';
 import useUser from '../../hooks/useUser';
@@ -27,6 +28,7 @@ const useStyles = makeStyles((theme) => ({
 export default function PostPage({ post: initialPost }: Props) {
   const classes = useStyles();
 
+  const globalDialogContext = useGlobalDialog();
   const { globalState } = useGlobalState();
   const { user, swr: userSwr } = useUser({});
 
@@ -43,16 +45,20 @@ export default function PostPage({ post: initialPost }: Props) {
   const post = latestPost ?? initialPost;
 
   // Login Dialog
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const onLoginCompleted = useCallback(() => {
     userSwr.mutate();
   }, [userSwr]);
+  const showLoginDialog = useCallback(() => {
+    globalDialogContext.setLoginDialogData({
+      onLoginCompleted,
+    });
+  }, [globalDialogContext, onLoginCompleted]);
 
   // Handler for voting
   const onVoteClicked = useCallback(
     async (postId: string, vote?: VoteForPost) => {
       if (user == null) {
-        setShowLoginDialog(true);
+        showLoginDialog();
         return;
       }
 
@@ -62,7 +68,7 @@ export default function PostPage({ post: initialPost }: Props) {
       postsSwr.mutate();
       userSwr.mutate();
     },
-    [setShowLoginDialog, user, userSwr]
+    [showLoginDialog, user, userSwr]
   );
 
   // Post content render state
@@ -79,13 +85,6 @@ export default function PostPage({ post: initialPost }: Props) {
     <div>
       {/*Navigation*/}
       <NavigationBar />
-
-      {/*Login Dialog*/}
-      <LoginDialog
-        isOpen={showLoginDialog}
-        setIsOpen={setShowLoginDialog}
-        onLoginCompleted={onLoginCompleted}
-      />
 
       {/*Post Content*/}
       <Card className={classes.postContentContainer}>

@@ -1,5 +1,7 @@
 import MintTransactionResult from '../server/blockchain/MintTransactionResult';
-import IpfsAwardMetadata from '../server/ipfs/IpfsAwardMetadata';
+import IpfsAwardMetadata, {
+  ApiIpfsAwardMetadata,
+} from '../server/ipfs/IpfsAwardMetadata';
 
 export default interface Award {
   id: string;
@@ -14,3 +16,8 @@ export default interface Award {
   // Saved IPFS metadata
   ipfsMetadata: IpfsAwardMetadata;
 }
+
+export type ApiAward = Omit<Award, 'createdAt' | 'ipfsMetadata'> & {
+  createdAt: string;
+  ipfsMetadata: ApiIpfsAwardMetadata;
+};
