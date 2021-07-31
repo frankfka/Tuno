@@ -1,4 +1,10 @@
-import { CircularProgress, Grid, makeStyles } from '@material-ui/core';
+import {
+  CircularProgress,
+  Grid,
+  Link,
+  makeStyles,
+  Typography,
+} from '@material-ui/core';
 import { FormikHelpers, FormikState } from 'formik/dist/types';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -35,6 +41,26 @@ const validationSchema = yup.object({
 
 type FormValues = yup.InferType<typeof validationSchema>;
 
+const CreatePostFormLinkHelperText: React.FC = () => {
+  return (
+    <Typography variant="caption">
+      A URL,{' '}
+      <Link
+        href="https://unstoppabledomains.com/"
+        target="_blank"
+        color="secondary"
+      >
+        Unstoppable Domain link
+      </Link>
+      , or{' '}
+      <Link href="https://ipfs.io/" target="_blank" color="secondary">
+        IPFS hash
+      </Link>
+      .
+    </Typography>
+  );
+};
+
 const CreatePostFormContent = (props: FormikProps<FormValues>) => {
   const classes = useStyles();
 
@@ -68,7 +94,7 @@ const CreatePostFormContent = (props: FormikProps<FormValues>) => {
             name="contentLink"
             label="Content Link"
             variant="outlined"
-            helperText="A URL or an IPFS hash."
+            helperText={<CreatePostFormLinkHelperText />}
           />
         </Grid>
 

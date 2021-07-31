@@ -1,16 +1,44 @@
+import { post } from '@magic-sdk/admin/dist/utils/rest';
+import { split } from 'lodash';
 import { MimeType, mimeTypes } from 'file-type';
+import Resolution from '@unstoppabledomains/resolution';
 import FileType from 'file-type/browser';
 import ReactPlayer from 'react-player';
 import PostContent from '../types/PostContent';
 import PostContentSource from '../types/PostContentSource';
 import PostContentType from '../types/PostContentType';
-import {getCidGatewayUrl} from "./cidUtils";
+import { getCid, getCidGatewayUrl } from './cidUtils';
 
 export type LinkContentInfo = Omit<PostContent, 'title'>;
 
 /*
 Link Type Checkers
  */
+
+const unstoppableDomainResolver = new Resolution();
+
+const UNSTOPPABLE_DOMAINS = ['.crypto', '.zil'];
+
+// the domain itself and an optional tail, which defaults to empty
+type UnstoppableDomain = [string, string];
+const getUnstoppableDomain = (link: string): UnstoppableDomain | undefined => {
+  const matchingDomains = UNSTOPPABLE_DOMAINS.filter((d) => link.includes(d));
+
+  if (matchingDomains.length === 1) {
+    const match = matchingDomains[0];
+    const splitLinkContents = split(link, match);
+
+    // We should have <= 2 items - the actual domain (without extension) and an optional tail
+    if (splitLinkContents.length > 2) {
+      return;
+    }
+
+    return [
+      splitLinkContents[0] + match,
+      splitLinkContents.length > 1 ? splitLinkContents[1] : '',
+    ];
+  }
+};
 
 const isHttpLink = (link: string): boolean => {
   return link.startsWith('http') || link.startsWith('https');
@@ -106,6 +134,19 @@ const getLinkContentInfoFromCid = async (
   };
 };
 
+// Unstoppable domain
+const getLinkContentInfoFromUnstoppableDomain = async (
+  unstoppableDomain: UnstoppableDomain
+): Promise<LinkContentInfo | undefined> => {
+  const [domain, postfix] = unstoppableDomain;
+  try {
+    const resolvedCid = await unstoppableDomainResolver.ipfsHash(domain);
+    return getLinkContentInfoFromCid(resolvedCid + postfix);
+  } catch (err) {
+    console.error('Error resolving unstoppable domain', domain, postfix, err);
+  }
+};
+
 const getLinkContentInfo = async (
   link: string
 ): Promise<LinkContentInfo | undefined> => {
@@ -120,9 +161,17 @@ const getLinkContentInfo = async (
   }
 
   // IPFS hashes
-  const possibleCid = cleanedLink.replace('ipfs://', '');
+  const possibleCid = getCid(cleanedLink);
   if (isIpfsCid(possibleCid)) {
     return getLinkContentInfoFromCid(possibleCid);
+  }
+
+  // Unstoppable domain
+  const unstoppableDomainParseResult = getUnstoppableDomain(cleanedLink);
+  if (unstoppableDomainParseResult != null) {
+    return getLinkContentInfoFromUnstoppableDomain(
+      unstoppableDomainParseResult
+    );
   }
 };
 
