@@ -22,8 +22,7 @@ export default function HomePage() {
   // Dialogs
   const globalDialogContext = useGlobalDialog();
 
-  // TODO revert
-  const [showCreatePostDialog, setShowCreatePostDialog] = useState(true);
+  const [showCreatePostDialog, setShowCreatePostDialog] = useState(false);
 
   // Global state
   const globalState = useGlobalState();

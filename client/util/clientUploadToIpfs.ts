@@ -1,22 +1,23 @@
-import { Web3Storage } from 'web3.storage';
-import { getCid } from '../../util/cidUtils';
+type NftStorageUploadResponse = {
+  cid: string;
+};
 
 // Uploads a file to IPFS using nft.storage
 export const clientUploadToIpfs = async (file: File): Promise<string> => {
   const storageToken = process.env.NEXT_PUBLIC_WEB3_STORAGE_KEY;
 
-  console.log(storageToken);
-  console.log(file);
-
   if (storageToken == null) {
     throw Error('Web3 Storage token not defined');
   }
-  const storageClient = new Web3Storage({
-    token: storageToken,
+
+  const uploadResponse = await fetch('https://api.web3.storage/upload', {
+    method: 'POST',
+    body: file,
+    headers: {
+      Authorization: 'Bearer ' + storageToken,
+    },
   });
-  const cid = await storageClient.put([file]);
 
-  console.log(cid);
-
-  return getCid(cid + '/' + file.name); // The image property is prefixed with ipfs://
+  const respJson: NftStorageUploadResponse = await uploadResponse.json();
+  return respJson.cid;
 };
