@@ -1,11 +1,16 @@
 import { omit } from 'lodash';
 import Award from '../../types/Award';
+import GlobalState from '../../types/GlobalState';
 import Post from '../../types/Post';
 import User from '../../types/User';
 import {
   MongooseAwardData,
   MongooseAwardDocument,
 } from './models/MongooseAward';
+import {
+  MongooseGlobalStateData,
+  MongooseGlobalStateDocument,
+} from './models/MongooseGlobalState';
 import { MongoosePostData, MongoosePostDocument } from './models/MongoosePost';
 import { MongooseUserData, MongooseUserDocument } from './models/MongooseUser';
 
@@ -40,5 +45,15 @@ export const convertAwardDocumentToAward = (
   return {
     ...documentObj,
     id: awardDocument.id,
+  };
+};
+
+export const convertGlobalStateDocumentToGlobalState = (
+  globalStateDocument: MongooseGlobalStateDocument
+): GlobalState => {
+  const documentObj = globalStateDocument.toObject<MongooseGlobalStateData>();
+
+  return {
+    ...documentObj,
   };
 };

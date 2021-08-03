@@ -13,6 +13,7 @@ import {
 } from './blockchain/BlockchainService';
 import {
   convertAwardDocumentToAward,
+  convertGlobalStateDocumentToGlobalState,
   convertPostDocumentToPost,
   convertUserDocumentToUser,
 } from './database/converters';
@@ -123,7 +124,9 @@ class ServerAppServiceImpl implements ServerAppService {
   Global
    */
   async getGlobalState(): Promise<GlobalState> {
-    return this.databaseService.getGlobalStateData();
+    return convertGlobalStateDocumentToGlobalState(
+      await this.databaseService.getGlobalState()
+    );
   }
 
   /*
@@ -151,7 +154,7 @@ class ServerAppServiceImpl implements ServerAppService {
   async getAllPosts(params: GetAllPostsParams): Promise<GetPostsResult> {
     const { tallyIndex, minVoteScore } = params;
 
-    const globalState = await this.databaseService.getGlobalStateData();
+    const globalState = await this.databaseService.getGlobalState();
     const numPastTallies = globalState.tallies.length;
 
     // Param
@@ -321,7 +324,7 @@ class ServerAppServiceImpl implements ServerAppService {
    */
 
   async tallyTopPost(): Promise<void> {
-    const globalState = await this.databaseService.getGlobalStateData();
+    const globalState = await this.databaseService.getGlobalState();
 
     // Get top posts since last tally
     const lastTallyTime =

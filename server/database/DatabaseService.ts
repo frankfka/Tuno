@@ -1,6 +1,6 @@
 import { add, isBefore } from 'date-fns';
-import { FilterQuery, Mongoose, QueryWithHelpers } from 'mongoose';
 import { remove } from 'lodash';
+import { FilterQuery, Mongoose, QueryWithHelpers } from 'mongoose';
 import Award from '../../types/Award';
 import PostContent from '../../types/PostContent';
 import TallyData from '../../types/TallyData';
@@ -16,16 +16,15 @@ import MongooseGlobalState, {
   MongooseGlobalStateDocument,
 } from './models/MongooseGlobalState';
 import MongoosePost, { MongoosePostDocument } from './models/MongoosePost';
-import MongooseUser, {
-  MongooseUserData,
-  MongooseUserDocument,
-} from './models/MongooseUser';
+import MongooseUser, { MongooseUserDocument } from './models/MongooseUser';
 
 export interface DatabaseService {
   init(): Promise<void>;
 
   // Global
-  getGlobalStateData(): Promise<MongooseGlobalStateData>;
+  getGlobalState(): Promise<
+    MongooseGlobalStateDocument & MongooseGlobalStateData
+  >;
 
   // Posts
   createPost(
@@ -63,18 +62,13 @@ export default class DatabaseServiceImpl implements DatabaseService {
 
   async init() {
     this.mongoose = await getMongooseConnection();
-    this.cachedGlobalStateData = (await this.getGlobalState()).toObject();
   }
 
   /*
   Globals
    */
 
-  async getGlobalStateData(): Promise<MongooseGlobalStateData> {
-    return this.cachedGlobalStateData;
-  }
-
-  private async getGlobalState(): Promise<
+  async getGlobalState(): Promise<
     MongooseGlobalStateDocument & MongooseGlobalStateData
   > {
     const globalStateDocument = await MongooseGlobalState.findOne().exec();
@@ -82,7 +76,7 @@ export default class DatabaseServiceImpl implements DatabaseService {
       throw Error('Global state document does not exist');
     }
 
-    // TODO: Mocking next tally time here for now
+    // TODO: Mocking next tally time here for now until we have a cron job
     let nextTallyTime = new Date(
       globalStateDocument.nextTallyTime ?? new Date()
     );
@@ -128,6 +122,7 @@ export default class DatabaseServiceImpl implements DatabaseService {
   // Throws if the user has exceeded maximum daily votes, or if the user/vote does not exist
   async voteOnPost(userId: string, vote: CreateVoteParams) {
     console.log('Executing vote on post', userId, 'Vote:', vote);
+    const globalState = await this.getGlobalState();
 
     await this.mongoose.connection.transaction(async (session) => {
       // Get the user associated with the post
@@ -135,7 +130,7 @@ export default class DatabaseServiceImpl implements DatabaseService {
         userId,
         {},
         { session }
-      ).slice('votes', -this.cachedGlobalStateData.voteLimit); // First vote here is the earliest
+      ).slice('votes', -globalState.voteLimit); // First vote here is the earliest
 
       if (mongooseUser == null) {
         throw Error('User does not exist');
@@ -167,10 +162,9 @@ export default class DatabaseServiceImpl implements DatabaseService {
       // If the vote is valid (i.e. not 0, which indicates a deletion, push the new vote)
       if (vote.weight !== 0) {
         if (
-          userVotes.length === this.cachedGlobalStateData.voteLimit &&
+          userVotes.length === globalState.voteLimit &&
           // We can just check the vote time, because historical posts can't be voted on
-          userVotes[0].createdAt >
-            getLastTallyTime(this.cachedGlobalStateData.tallies)
+          userVotes[0].createdAt > getLastTallyTime(globalState.tallies)
         ) {
           // User exceeded max votes
           console.error('User exceeded max votes, not counting this vote');
@@ -208,10 +202,19 @@ export default class DatabaseServiceImpl implements DatabaseService {
 
   async recordTally(tally: TallyData) {
     const globalStateDoc = await this.getGlobalState();
-    globalStateDoc.tallies.unshift(tally);
-    await globalStateDoc.save();
 
-    this.cachedGlobalStateData = globalStateDoc.toObject();
+    // Save to all tallies
+    globalStateDoc.tallies.unshift(tally);
+
+    // Update next tally time
+    globalStateDoc.nextTallyTime = add(
+      globalStateDoc.nextTallyTime ?? new Date(),
+      {
+        days: 1,
+      }
+    );
+
+    await globalStateDoc.save();
   }
 
   async saveAward(
@@ -267,10 +270,12 @@ export default class DatabaseServiceImpl implements DatabaseService {
   private async executeUserQuery(
     query: QueryWithHelpers<any, any>
   ): Promise<MongooseUserDocument | null> {
+    const globalState = await this.getGlobalState();
+
     return (
       query
         // Limit to the maximum of today's votes
-        .slice('votes', -this.cachedGlobalStateData.voteLimit)
+        .slice('votes', -globalState.voteLimit)
         .exec()
     );
   }
