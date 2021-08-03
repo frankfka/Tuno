@@ -102,6 +102,15 @@ class ServerAppServiceImpl implements ServerAppService {
   ipfsService!: IpfsService;
 
   async init() {
+    if (
+      this.databaseService != null &&
+      this.authService != null &&
+      this.blockchainService != null &&
+      this.ipfsService != null
+    ) {
+      return;
+    }
+
     this.databaseService = new DatabaseServiceImpl();
     await this.databaseService.init();
 
@@ -218,6 +227,7 @@ class ServerAppServiceImpl implements ServerAppService {
 
   async login(authHeader: string): Promise<UserAuthData | undefined> {
     console.log('App service login', authHeader);
+    console.log(this.authService);
     const userAuth = await this.authService.login(authHeader);
 
     if (userAuth == null) {
@@ -439,6 +449,7 @@ let cachedService: ServerAppService | undefined = undefined;
 export const getServerAppService = async (): Promise<ServerAppService> => {
   if (cachedService != null) {
     console.log('Returning cached service');
+    await cachedService.init();
     return cachedService;
   }
 
