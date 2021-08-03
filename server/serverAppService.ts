@@ -226,8 +226,6 @@ class ServerAppServiceImpl implements ServerAppService {
    */
 
   async login(authHeader: string): Promise<UserAuthData | undefined> {
-    console.log('App service login', authHeader);
-    console.log(this.authService);
     const userAuth = await this.authService.login(authHeader);
 
     if (userAuth == null) {
@@ -454,8 +452,10 @@ export const getServerAppService = async (): Promise<ServerAppService> => {
   }
 
   console.log('Creating new app service');
-  cachedService = new ServerAppServiceImpl();
-  await cachedService.init();
 
+  const svc = new ServerAppServiceImpl();
+  await svc.init();
+
+  cachedService = svc;
   return cachedService;
 };

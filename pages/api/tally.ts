@@ -28,9 +28,6 @@ export default async function handler(
     return;
   }
 
-  res.status(200).json({});
-  return;
-
   const appService = await getServerAppService();
 
   await appService.tallyTopPost();

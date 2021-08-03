@@ -41,12 +41,10 @@ export default class AuthServiceImpl implements AuthService {
       throw Error('Auth token secret not defined');
     }
 
-    console.log('Auth service init');
     this.authTokenSecret = authTokenSecret;
   }
 
   async login(authHeader: string): Promise<UserAuthData | undefined> {
-    console.log('Auth service login');
     try {
       const didToken =
         this.magicAuth.utils.parseAuthorizationHeader(authHeader);
