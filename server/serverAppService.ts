@@ -217,6 +217,7 @@ class ServerAppServiceImpl implements ServerAppService {
    */
 
   async login(authHeader: string): Promise<UserAuthData | undefined> {
+    console.log('App service login', authHeader);
     const userAuth = await this.authService.login(authHeader);
 
     if (userAuth == null) {
