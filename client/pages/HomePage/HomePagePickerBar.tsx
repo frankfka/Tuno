@@ -10,11 +10,16 @@ import {
 import { format, formatDuration, intervalToDuration, parseISO } from 'date-fns';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { ApiTallyData } from '../../../types/TallyData';
 import getApiSafeDate from '../../../util/getApiSafeDate';
+import useGlobalDialog from '../../hooks/useGlobalDialog';
 import useGlobalState from '../../hooks/useGlobalState';
+import TallyHelpInfoDialogContent, {
+  TallyHelpinfoDialogTitle,
+} from './TallyHelpInfoDialogContent';
 
 type Props = {
   tallyIndex: number;
@@ -26,6 +31,9 @@ const useStyles = makeStyles((theme) => ({
   container: {
     padding: theme.spacing(1, 1),
   },
+  tallyHelpIcon: {
+    marginLeft: theme.spacing(1),
+  },
 }));
 
 const HomePagePickerBar: React.FC<Props> = ({
@@ -35,6 +43,7 @@ const HomePagePickerBar: React.FC<Props> = ({
 }) => {
   const classes = useStyles();
 
+  const globalDialogContext = useGlobalDialog();
   const { globalState } = useGlobalState();
   const [timeToNextTally, setTimeToNextTally] = useState<Duration>({});
 
@@ -72,9 +81,18 @@ const HomePagePickerBar: React.FC<Props> = ({
         : format(parseISO(tallies[tallyIndex - 1].tallyTime), 'PP');
   }
 
+  // On click for header text
   const onHeaderDateTextClicked = useCallback(() => {
     setTallyIndex(0);
   }, [setTallyIndex]);
+
+  // On click for tally help icon
+  const onHeaderHelpIconClicked = useCallback(() => {
+    globalDialogContext.setInfoDialogData({
+      title: TallyHelpinfoDialogTitle,
+      content: <TallyHelpInfoDialogContent />,
+    });
+  }, [globalDialogContext]);
 
   return (
     <Grid
@@ -106,6 +124,16 @@ const HomePagePickerBar: React.FC<Props> = ({
             </Box>
           </Button>
         </Tooltip>
+        {tallyIndex === 0 && (
+          <IconButton
+            size="small"
+            className={classes.tallyHelpIcon}
+            color="secondary"
+            onClick={onHeaderHelpIconClicked}
+          >
+            <HelpOutlineIcon fontSize="small" />
+          </IconButton>
+        )}
       </Grid>
 
       <Grid item>
