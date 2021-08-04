@@ -21,6 +21,7 @@ import getApiSafeDate from '../../../util/getApiSafeDate';
 import useGetAward from '../../hooks/useGetAward';
 import getTransactionViewerUrl from '../../util/getTransactionViewerUrl';
 import ErrorView from '../ErrorView/ErrorView';
+import LoadingView from '../LoadingView/LoadingView';
 
 type Props = {
   awardId: string;
@@ -29,12 +30,6 @@ type Props = {
 };
 
 const useStyles = makeStyles((theme) => ({
-  loadingContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '30vh',
-  },
   awardInfoContainer: {
     padding: theme.spacing(0, 2),
   },
@@ -43,21 +38,6 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(1, 0),
   },
 }));
-
-const LoadingView = () => {
-  const classes = useStyles();
-
-  return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      className={classes.loadingContainer}
-    >
-      <CircularProgress />
-    </Box>
-  );
-};
 
 const AwardInfoTextField: React.FC<
   Pick<TextFieldProps, 'label' | 'value' | 'helperText'>
@@ -139,7 +119,7 @@ const AwardInfoDialog: React.FC<Props> = ({ awardId, isOpen, closeDialog }) => {
   if (award) {
     contentElement = <AwardInfoContent award={award} />;
   } else if (loading) {
-    contentElement = <LoadingView />;
+    contentElement = <LoadingView minHeight="30vh" />;
   } else if (error != null) {
     contentElement = <ErrorView />;
   }

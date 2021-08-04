@@ -1,6 +1,7 @@
-import { Card, makeStyles } from '@material-ui/core';
+import { Box, Card, makeStyles, Typography } from '@material-ui/core';
 import React, { Dispatch, SetStateAction, useCallback, useState } from 'react';
 import { GetAllPostsParams } from '../../../server/types/GetPosts';
+import LoadingView from '../../components/LoadingView/LoadingView';
 import PostContentView from '../../components/Posts/PostContent/PostContentView';
 import { VoteType } from '../../components/Posts/PostContent/PostContentVoteButtons';
 import useGlobalState, {
@@ -31,7 +32,39 @@ const useStyles = makeStyles((theme) => ({
   postItemContainer: {
     margin: theme.spacing(4, 0),
   },
+  noContentContainer: {
+    margin: theme.spacing(4, 0),
+    padding: theme.spacing(4, 4),
+    minHeight: '50vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 }));
+
+const HomePostsNoItemsContent: React.FC<{ tallyIndex: number }> = ({
+  tallyIndex,
+}) => {
+  const classes = useStyles();
+
+  const title = '😢 No Posts' + (tallyIndex === 0 ? ' Yet' : '');
+  const subtitle = tallyIndex === 0 ? "Why don't you create one now?" : '';
+
+  return (
+    <Card className={classes.noContentContainer}>
+      <Box textAlign="center">
+        <Typography variant="h4" paragraph>
+          {title}
+        </Typography>
+        {subtitle && (
+          <Typography variant="h6" color="secondary">
+            {subtitle}
+          </Typography>
+        )}
+      </Box>
+    </Card>
+  );
+};
 
 const HomePostsListContent: React.FC<Props> = ({
   // State
@@ -81,6 +114,16 @@ const HomePostsListContent: React.FC<Props> = ({
           tallies={globalState.globalState?.tallies ?? []}
         />
       </Card>
+
+      {/*Loader*/}
+      {loadingPosts && <LoadingView minHeight="50vh" />}
+
+      {/*No Posts Content*/}
+      {!loadingPosts && postsData?.posts.length === 0 && (
+        <HomePostsNoItemsContent tallyIndex={getAllPostsParams.tallyIndex} />
+      )}
+
+      {/*Posts*/}
       {/*TODO Back to top https://material-ui.com/components/app-bar/#back-to-top*/}
       <div>
         {postsData?.posts.map((post) => {

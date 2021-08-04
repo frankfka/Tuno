@@ -108,7 +108,6 @@ export default function HomePage() {
     postsSwr.mutate();
   };
 
-  // TODO: loading (maybe have a wrapper?)
   return (
     <div>
       {/*Navigation*/}
