@@ -8,5 +8,6 @@ jobs:
     steps:
       - name: Call Tally API
         run: |
+          curl --location --request GET 'https://tuno.vercel.app/api/lifecheck' && sleep 0.5 && \
           curl --location --request POST 'https://tuno.vercel.app/api/tally' \
           --header 'Authorization: ${{ secrets.TALLY_SECRET_KEY }}'
