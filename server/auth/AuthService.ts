@@ -25,7 +25,7 @@ export default class AuthServiceImpl implements AuthService {
   // Cookies
   private readonly authTokenSecret: string;
   private readonly authTokenCookieName: string = 'session-token';
-  private readonly authTokenCookieMaxAge: number = 60 * 60 * 8; // 8 Hours
+  private readonly authTokenCookieMaxAge: number = 60 * 60 * 36; // 36 Hours
 
   constructor() {
     // Create magic client

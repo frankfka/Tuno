@@ -74,7 +74,6 @@ export default function NavigationBar() {
     </Button>
   );
 
-  // TODO: Finish removing login dialog
   return (
     <div className={classes.root}>
       {/*App Bar*/}

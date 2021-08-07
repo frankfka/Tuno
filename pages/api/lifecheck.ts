@@ -9,6 +9,12 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Create app service and execute something
+  const appService = await getServerAppService();
+
+  const globalState = await appService.getGlobalState();
+  console.log('Lifecheck', globalState.voteLimit);
+
   res.status(200).json({
     result: 'hola!',
   });
