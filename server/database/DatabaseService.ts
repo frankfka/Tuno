@@ -206,7 +206,7 @@ export default class DatabaseServiceImpl implements DatabaseService {
     // Save to all tallies
     globalStateDoc.tallies.unshift(tally);
 
-    // Update next tally time to be a day from now (TODO not yet implemented)
+    // Update next tally time to be a day from now
     globalStateDoc.nextTallyTime = add(new Date(), {
       days: 1,
     });

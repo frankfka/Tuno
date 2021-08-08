@@ -326,6 +326,11 @@ class ServerAppServiceImpl implements ServerAppService {
   async tallyTopPost(): Promise<void> {
     const globalState = await this.databaseService.getGlobalState();
 
+    const tallyData: TallyData = {
+      tallyTime: new Date(),
+      awards: [],
+    };
+
     // Get top posts since last tally
     const lastTallyTime =
       globalState.tallies.length > 0
@@ -348,6 +353,8 @@ class ServerAppServiceImpl implements ServerAppService {
     // Skip this tally if there are no posts, or no votes
     if (topPost == null) {
       console.log('No top posts, skipping this tally');
+      // Still record a tally to update next tally time
+      await this.databaseService.recordTally(tallyData);
       return;
     }
 
@@ -433,10 +440,8 @@ class ServerAppServiceImpl implements ServerAppService {
 
     console.log('Updated post with award');
 
-    const tallyData: TallyData = {
-      tallyTime: new Date(),
-      awards: [savedAward.id],
-    };
+    // Also add to current tally data
+    tallyData.awards.push(savedAward.id);
 
     // Save to DB
     await this.databaseService.recordTally(tallyData);
