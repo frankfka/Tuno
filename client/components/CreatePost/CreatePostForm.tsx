@@ -1,12 +1,4 @@
-import {
-  Box,
-  CircularProgress,
-  Divider,
-  Grid,
-  Link,
-  makeStyles,
-  Typography,
-} from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import { FormikHelpers, FormikState } from 'formik/dist/types';
 import React, { useState } from 'react';
@@ -17,153 +9,14 @@ import PostContentType from '../../../types/PostContentType';
 import getLinkContentInfo from '../../../util/getLinkContentInfo';
 import callCreatePostApi from '../../util/api/callCreatePostApi';
 import { clientUploadToIpfs } from '../../util/clientUploadToIpfs';
-import FormikFileUpload from '../common/Input/FormikFileUpload';
-import FormikTextField from '../common/Input/FormikTextField';
 import {
   CreatePostFormValues,
-  CREATE_POST_MAX_FILE_SIZE,
-  CREATE_POST_MAX_TITLE_LENGTH,
   createPostValidationSchema,
 } from './createPostFormConstants';
+import CreatePostFormContent from './CreatePostFormContent';
 
 type CreatePostFormProps = {
   onCreate: (postId: string) => void;
-};
-
-const useStyles = makeStyles((theme) => ({
-  fullWidthGridItem: {
-    width: '100%',
-  },
-  dividerGridItem: {
-    width: '60%',
-  },
-}));
-
-const CreatePostFormContentTypeDivider: React.FC = () => {
-  return (
-    <Grid container alignItems="center" spacing={2}>
-      <Grid item xs>
-        <Divider />
-      </Grid>
-
-      <Grid item>
-        <span>Or</span>
-      </Grid>
-
-      <Grid item xs>
-        <Divider />
-      </Grid>
-    </Grid>
-  );
-};
-
-const CreatePostFormLinkHelperText: React.FC = () => {
-  return (
-    <Typography variant="caption">
-      A URL,{' '}
-      <Link
-        href="https://unstoppabledomains.com/"
-        target="_blank"
-        color="secondary"
-      >
-        Unstoppable Domain link
-      </Link>
-      , or{' '}
-      <Link href="https://ipfs.io/" target="_blank" color="secondary">
-        IPFS hash
-      </Link>
-      .
-    </Typography>
-  );
-};
-
-const CreatePostFormContent = (props: FormikProps<CreatePostFormValues>) => {
-  const classes = useStyles();
-
-  const isFormValid = props.isValid;
-  const isLoading = props.isSubmitting;
-
-  const disableSubmitButton = isLoading || !(isFormValid && props.dirty);
-
-  return (
-    <Form>
-      <Grid
-        container
-        direction="column"
-        justifyContent="center"
-        alignItems="center"
-        spacing={1}
-      >
-        {/*Title*/}
-        <Grid item className={classes.fullWidthGridItem}>
-          <FormikTextField
-            fullWidth
-            name="title"
-            label="Post Title"
-            variant="outlined"
-            helperText={`${
-              CREATE_POST_MAX_TITLE_LENGTH - props.values.title.length
-            } characters left`}
-          />
-        </Grid>
-
-        {/*Content section*/}
-        <Grid item className={classes.fullWidthGridItem}>
-          <Grid
-            container
-            direction="column"
-            justifyContent="center"
-            alignItems="center"
-            spacing={1}
-          >
-            <Grid item>
-              <Typography variant="subtitle1">Post Content</Typography>
-            </Grid>
-            <Grid item className={classes.fullWidthGridItem}>
-              <FormikTextField
-                fullWidth
-                name="contentLink"
-                label="Content Link"
-                variant="outlined"
-                helperText={<CreatePostFormLinkHelperText />}
-              />
-            </Grid>
-
-            <Grid item className={classes.dividerGridItem}>
-              <CreatePostFormContentTypeDivider />
-            </Grid>
-
-            <Grid item>
-              <FormikFileUpload
-                name="file"
-                allowedInputFileType="image/*,video/*"
-                helperText="An image or video up to 10mb."
-                maxFileSize={CREATE_POST_MAX_FILE_SIZE}
-              />
-            </Grid>
-          </Grid>
-        </Grid>
-
-        <Grid item className={classes.fullWidthGridItem}>
-          <Box mt={2}>
-            <Button
-              fullWidth
-              color="secondary"
-              variant="contained"
-              type="submit"
-              disabled={disableSubmitButton}
-            >
-              {isLoading ? (
-                <CircularProgress size={24} color="secondary" />
-              ) : (
-                'Create'
-              )}
-            </Button>
-          </Box>
-        </Grid>
-      </Grid>
-    </Form>
-  );
 };
 
 const CreatePostForm: React.FC<CreatePostFormProps> = ({ onCreate }) => {
