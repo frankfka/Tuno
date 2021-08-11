@@ -64,7 +64,7 @@ const AwardInfoContent: React.FC<{ award: ApiAward }> = ({ award }) => {
   );
   const createdAtString = format(
     getApiSafeDate(award.createdAt),
-    'h:maa - MMM d, yyyy'
+    'h:mm aa - MMM d, yyyy'
   );
 
   return (
